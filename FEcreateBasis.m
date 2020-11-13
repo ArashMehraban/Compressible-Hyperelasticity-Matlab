@@ -11,20 +11,35 @@ function [B, D, W] = FEcreateBasis(P,Q, Qmode)
      %extend this to higher order than 2 based on C code later
      [qref1d, W] = GaussQuadrature(Q);
      
- elseif(strcmp(Qmode, 'GLL'))
+ elseif(strcmp(Qmode, 'LGL'))
      [qref1d, W] = LobattoQuadrature(Q);     
  else
-     error('Qmode error! Choose GAUSS or GLL Quadrature points!');
+     error('Qmode error! Choose GAUSS or LGL Quadrature points!');
  end
  
 
+end
+
+function [qref1d,W] = GaussQuadrature(Q)
+%input: Q: Number of quadrature points (Gauss)
+%output:qref1d: Gauss quadrature points
+%       W: Gauss weights
+% Golub-Welsch algorithm: (Brute force version by Trefethen-Bau)
+% to calculate Gauss points and weights using Legendre weight function 
+%
+    beta = 0.5./sqrt(1-(2*(1:Q-1)).^(-2));
+    [V,D]=eig(diag(beta,1)+diag(beta,-1));
+    [x,i]=sort(diag(D)); 
+    w=2*V(1,i).^2';
+
+    W = w';
+    qref1d = x';
 end
 
 function [qref1d, W] = LobattoQuadrature(Q)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% lglnodes.m
 %
 % Computes the Legendre-Gauss-Lobatto nodes, weights and the LGL Vandermonde
 % matrix. The LGL nodes are the zeros of (1-x^2)*P'_Q(x). Useful for numerical
@@ -68,7 +83,8 @@ function [qref1d, W] = LobattoQuadrature(Q)
 
     end
 
-    W=2./(Q*Q1*P(:,Q1).^2);
-    qref1d = x;
+    w=2./(Q*Q1*P(:,Q1).^2);
+    W = w';
+    qref1d = x';
     
  end
