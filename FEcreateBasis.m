@@ -1,22 +1,46 @@
 function [B, D, W] = FEcreateBasis(P,Q, Qmode)
 
- B = zeros(P*Q,1);
- D = zeros(P*Q,1);
- W = zeros(Q);
- qref1d =zeros(Q);
- nodes = zeros(P);
+%  B = zeros(P*Q,1);
+%  D = zeros(P*Q,1);
+%  W = zeros(Q);
+%  qref1d =zeros(Q);
+%  nodes = zeros(P);
  
  %[nodes, ~ ] = LobattoQuadrature(P); 
  if(strcmp(Qmode, 'GAUSS'))
      %extend this to higher order than 2 based on C code later
      [qref1d, W] = GaussQuadrature(Q);
-     
+     x = qref1d;
+     if P==2
+         BHat = [(1-x)/2, (1+x)/2];
+         DHat = [-1/2+0*x, 1/2+0*x];
+     elseif P==3
+         BHat = [(x.^2 - x)/2, (1-x.^2), (x.^2+x)/2];
+         DHat = [x-1/2, -2*x, x+1/2];
+     else
+         error('Polynomial order is not supported!');
+     end     
+
  elseif(strcmp(Qmode, 'LGL'))
      [qref1d, W] = LobattoQuadrature(Q);     
+     x = qref1d;
+     if P==2
+         BHat = [(1-x)/2, (1+x)/2];
+         DHat = [-1/2+0*x, 1/2+0*x];
+     elseif P==3
+         BHat = [(x.^2 - x)/2, (1-x.^2), (x.^2+x)/2];
+         DHat = [x-1/2, -2*x, x+1/2];
+     else
+         error('Polynomial order is not supported!');
+     end 
  else
      error('Qmode error! Choose GAUSS or LGL Quadrature points!');
  end
- 
+
+
+ B = BHat;
+ D = DHat;
+ W = W;
 
 end
 
