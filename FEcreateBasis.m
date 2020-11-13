@@ -1,35 +1,30 @@
-function [B, D, W] = FEcreateBasis(P,Q, Qmode)
+function [B, D, W, Q] = FEcreateBasis(P,Q, Qmode)
 
-%  B = zeros(P*Q,1);
-%  D = zeros(P*Q,1);
-%  W = zeros(Q);
-%  qref1d =zeros(Q);
-%  nodes = zeros(P);
- 
+ dof = P + 1;
  %[nodes, ~ ] = LobattoQuadrature(P); 
  if(strcmp(Qmode, 'GAUSS'))
      %extend this to higher order than 2 based on C code later
      [qref1d, W] = GaussQuadrature(Q);
      x = qref1d;
-     if P==2
-         BHat = [(1-x)/2, (1+x)/2];
-         DHat = [-1/2+0*x, 1/2+0*x];
-     elseif P==3
-         BHat = [(x.^2 - x)/2, (1-x.^2), (x.^2+x)/2];
-         DHat = [x-1/2, -2*x, x+1/2];
+     if dof==2
+         BHat = [(1-x)/2; (1+x)/2];
+         DHat = [-1/2+0*x; 1/2+0*x];
+     elseif dof==3
+         BHat = [(x.^2 - x)/2; (1-x.^2); (x.^2+x)/2];
+         DHat = [x-1/2; -2*x; x+1/2];
      else
          error('Polynomial order is not supported!');
      end     
 
  elseif(strcmp(Qmode, 'LGL'))
-     [qref1d, W] = LobattoQuadrature(Q);     
+     [qref1d, W] = LobattoQuadrature(Q-1);     
      x = qref1d;
-     if P==2
-         BHat = [(1-x)/2, (1+x)/2];
-         DHat = [-1/2+0*x, 1/2+0*x];
-     elseif P==3
-         BHat = [(x.^2 - x)/2, (1-x.^2), (x.^2+x)/2];
-         DHat = [x-1/2, -2*x, x+1/2];
+     if dof==2
+         BHat = [(1-x)/2; (1+x)/2];
+         DHat = [-1/2+0*x; 1/2+0*x];
+     elseif dof==3
+         BHat = [(x.^2 - x)/2; (1-x.^2); (x.^2+x)/2];
+         DHat = [x-1/2; -2*x; x+1/2];
      else
          error('Polynomial order is not supported!');
      end 
@@ -38,9 +33,10 @@ function [B, D, W] = FEcreateBasis(P,Q, Qmode)
  end
 
 
- B = BHat;
- D = DHat;
+ B = reshape(BHat,dof*Q,1)';
+ D = reshape(DHat,dof*Q,1)';
  W = W;
+ Q = qref1d;
 
 end
 
