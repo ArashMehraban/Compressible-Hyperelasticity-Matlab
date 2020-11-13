@@ -22,55 +22,53 @@ end
 
 function [qref1d, W] = LobattoQuadrature(Q)
 
-  % Build qref1d, qweight1d
-  % Set endpoints
-  wi = 2.0/((Q*(Q-1)));
-  qweight1d(1) = wi;
-  qweight1d(Q) = wi;
- 
-  qref1d(1) = -1.0;
-  qref1d(Q) = 1.0;
-  % Interior
-  for i = 2:floor((Q-1)/2) 
-    % Guess
-    xi = cos(pi*(i-1)/(Q-1));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% lglnodes.m
+%
+% Computes the Legendre-Gauss-Lobatto nodes, weights and the LGL Vandermonde
+% matrix. The LGL nodes are the zeros of (1-x^2)*P'_Q(x). Useful for numerical
+% integration and spectral methods.
+%
+% Reference on LGL nodes and weights:
+%   C. Canuto, M. Y. Hussaini, A. Quarteroni, T. A. Tang, "Spectral Methods
+%   in Fluid Dynamics," Section 2.3. Springer-Verlag 1987
+%
+% Written by Greg von Winckel - 04/17/2004
+% Contact: gregvw@chtm.unm.edu
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    % Pn(xi)
-    P0 = 1.0;
-    P1 = xi;
-    P2 = 0.0;
-    for j=2:Q-1 
-      P2 = (((2*j-1))*xi*P1-((j-1))*P0)/(j);
-      P0 = P1;
-      P1 = P2;
+% Truncation + 1
+    Q1=Q+1;
+
+    % Use the Chebyshev-Gauss-Lobatto nodes as the first guess
+    x=-cos(pi*(0:Q)/Q)';
+
+    % The Legendre Vandermonde Matrix
+    P=zeros(Q1,Q1);
+
+    % Compute P_(Q) using the recursion relation
+    % Compute its first and second derivatives and
+    % update x using the Newton-Raphson method.
+
+    xold=2;
+
+    while max(abs(x-xold))>eps
+
+        xold=x;
+
+        P(:,1)=1;    P(:,2)=x;
+
+        for k=2:Q
+            P(:,k+1)=( (2*k-1)*x.*P(:,k)-(k-1)*P(:,k-1) )/k;
+        end
+
+        x=xold-( x.*P(:,Q1)-P(:,Q) )./( Q1*P(:,Q1) );
+
     end
-    % First Newton step
-    dP2 = (xi*P2 - P0)* Q/(xi*xi-1.0);
-    d2P2 = (2*xi*dP2 - (Q*(Q-1))*P2)/(1.0-xi*xi);
-    xi = xi-dP2/d2P2;
-    % Newton to convergence
-    for k=1:101
-     if(abs(dP2)> 1e-15)
-      P0 = 1.0;
-      P1 = xi;
-      for (PetscInt j = 2; j < Q; j++) {
-        P2 = (((PetscScalar)(2*j-1))*xi*P1-((PetscScalar)(j-1))*P0)/((PetscScalar)(j));
-        P0 = P1;
-        P1 = P2;
-      }
-      dP2 = (xi*P2 - P0)*(PetscScalar)Q/(xi*xi-1.0);
-      d2P2 = (2*xi*dP2 - (PetscScalar)(Q*(Q-1))*P2)/(1.0-xi*xi);
-      xi = xi-dP2/d2P2;
-     end
-    end
-    // Save xi, wi
-    wi = 2.0/(((PetscScalar)(Q*(Q-1)))*P2*P2);
-    if (qweight1d) {
-      qweight1d[i] = wi;
-      qweight1d[Q-1-i] = wi;
-    }
-    qref1d[i] = -xi;
-    qref1d[Q-1-i]= xi;
-    end
+
+    W=2./(Q*Q1*P(:,Q1).^2);
+    qref1d = x;
     
  end
