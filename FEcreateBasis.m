@@ -33,8 +33,8 @@ function [B, D, W, Q] = FEcreateBasis(P,Q, Qmode)
  end
 
 
- B = reshape(BHat,dof*Q,1)';
- D = reshape(DHat,dof*Q,1)';
+ B = reshape(BHat,P*Q,1)';
+ D = reshape(DHat,P*Q,1)';
  W = W;
  Q = qref1d;
 
