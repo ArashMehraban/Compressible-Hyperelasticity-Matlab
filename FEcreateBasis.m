@@ -1,4 +1,4 @@
-function [B, D, W, Q] = FEcreateBasis(P,Q, Qmode)
+function [B, D, W, qref1d] = FEcreateBasis(P,Q, Qmode)
 
 
  [nodes, ~ ] = LobattoQuadrature(P); 
@@ -13,15 +13,11 @@ function [B, D, W, Q] = FEcreateBasis(P,Q, Qmode)
  else
      error('Qmode error! Choose GAUSS or LGL Quadrature points!');
  end
-
-
  B = B1d;
  D = D1d;
- Q = qref1d;
-
 end
 
-function [qref1d,W] = GaussQuadrature(Q)
+function [qref1d,w] = GaussQuadrature(Q)
 %input: Q: Number of quadrature points (Gauss)
 %output:qref1d: Gauss quadrature points
 %       W: Gauss weights
@@ -31,9 +27,7 @@ function [qref1d,W] = GaussQuadrature(Q)
     beta = 0.5./sqrt(1-(2*(1:Q-1)).^(-2));
     [V,D]=eig(diag(beta,1)+diag(beta,-1));
     [x,i]=sort(diag(D)); 
-    w=2*V(1,i).^2';
-
-    W = w';
+    w=2*V(1,i).^2;
     qref1d = x';
 end
 
