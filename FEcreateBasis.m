@@ -1,76 +1,121 @@
-function [B, D, W] = FEcreateBasis(P,Q, Qmode)
+function [B, D, W, Q] = FEcreateBasis(P,Q, Qmode)
 
- B = zeros(P*Q,1);
- D = zeros(P*Q,1);
- W = zeros(Q);
- qref1d =zeros(Q);
- nodes = zeros(P);
- 
- %[nodes, ~ ] = LobattoQuadrature(P); 
+
+ [nodes, ~ ] = LobattoQuadrature(P); 
  if(strcmp(Qmode, 'GAUSS'))
      %extend this to higher order than 2 based on C code later
      [qref1d, W] = GaussQuadrature(Q);
-     
- elseif(strcmp(Qmode, 'GLL'))
-     [qref1d, W] = LobattoQuadrature(Q);     
- else
-     error('Qmode error! Choose GAUSS or GLL Quadrature points!');
- end
- 
+     [B1d, D1d] = FEBasisEval(P, Q, nodes, qref1d);
 
+ elseif(strcmp(Qmode, 'LGL'))
+     [qref1d, W] = LobattoQuadrature(Q);     
+     [B1d, D1d] = FEBasisEval(P, Q, nodes, qref1d);
+ else
+     error('Qmode error! Choose GAUSS or LGL Quadrature points!');
+ end
+
+
+ B = B1d;
+ D = D1d;
+ Q = qref1d;
+
+end
+
+function [qref1d,W] = GaussQuadrature(Q)
+%input: Q: Number of quadrature points (Gauss)
+%output:qref1d: Gauss quadrature points
+%       W: Gauss weights
+% Golub-Welsch algorithm: (Brute force version by Trefethen-Bau)
+% to calculate Gauss points and weights using Legendre weight function 
+%
+    beta = 0.5./sqrt(1-(2*(1:Q-1)).^(-2));
+    [V,D]=eig(diag(beta,1)+diag(beta,-1));
+    [x,i]=sort(diag(D)); 
+    w=2*V(1,i).^2';
+
+    W = w';
+    qref1d = x';
 end
 
 function [qref1d, W] = LobattoQuadrature(Q)
 
-  % Build qref1d, qweight1d
-  % Set endpoints
-  wi = 2.0/((Q*(Q-1)));
-  qweight1d(1) = wi;
-  qweight1d(Q) = wi;
- 
-  qref1d(1) = -1.0;
-  qref1d(Q) = 1.0;
-  % Interior
-  for i = 2:floor((Q-1)/2) 
-    % Guess
-    xi = cos(pi*(i-1)/(Q-1));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%
+% Computes the Legendre-Gauss-Lobatto nodes, weights and the LGL Vandermonde
+% matrix. The LGL nodes are the zeros of (1-x^2)*P'_Q(x). Useful for numerical
+% integration and spectral methods.
+%
+% Reference on LGL nodes and weights:
+%   C. Canuto, M. Y. Hussaini, A. Quarteroni, T. A. Tang, "Spectral Methods
+%   in Fluid Dynamics," Section 2.3. Springer-Verlag 1987
+%
+% Written by Greg von Winckel - 04/17/2004
+% Contact: gregvw@chtm.unm.edu
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    % Pn(xi)
-    P0 = 1.0;
-    P1 = xi;
-    P2 = 0.0;
-    for j=2:Q-1 
-      P2 = (((2*j-1))*xi*P1-((j-1))*P0)/(j);
-      P0 = P1;
-      P1 = P2;
+% Truncation
+    Q1=Q;
+
+    % Use the Chebyshev-Gauss-Lobatto nodes as the first guess
+    x=-cos(pi*(0:Q-1)/(Q-1))';
+
+    % The Legendre Vandermonde Matrix
+    P=zeros(Q1,Q1);
+
+    % Compute P_(Q) using the recursion relation
+    % Compute its first and second derivatives and
+    % update x using the Newton-Raphson method.
+
+    xold=2;
+
+    while max(abs(x-xold))>eps
+
+        xold=x;
+
+        P(:,1)=1;    P(:,2)=x;
+
+        for k=2:Q-1
+            P(:,k+1)=( (2*k-1)*x.*P(:,k)-(k-1)*P(:,k-1) )/k;
+        end
+
+        x=xold-( x.*P(:,Q1)-P(:,Q-1) )./( Q1*P(:,Q1) );
+
     end
-    % First Newton step
-    dP2 = (xi*P2 - P0)* Q/(xi*xi-1.0);
-    d2P2 = (2*xi*dP2 - (Q*(Q-1))*P2)/(1.0-xi*xi);
-    xi = xi-dP2/d2P2;
-    % Newton to convergence
-    for k=1:101
-     if(abs(dP2)> 1e-15)
-      P0 = 1.0;
-      P1 = xi;
-      for (PetscInt j = 2; j < Q; j++) {
-        P2 = (((PetscScalar)(2*j-1))*xi*P1-((PetscScalar)(j-1))*P0)/((PetscScalar)(j));
-        P0 = P1;
-        P1 = P2;
-      }
-      dP2 = (xi*P2 - P0)*(PetscScalar)Q/(xi*xi-1.0);
-      d2P2 = (2*xi*dP2 - (PetscScalar)(Q*(Q-1))*P2)/(1.0-xi*xi);
-      xi = xi-dP2/d2P2;
-     end
-    end
-    // Save xi, wi
-    wi = 2.0/(((PetscScalar)(Q*(Q-1)))*P2*P2);
-    if (qweight1d) {
-      qweight1d[i] = wi;
-      qweight1d[Q-1-i] = wi;
-    }
-    qref1d[i] = -xi;
-    qref1d[Q-1-i]= xi;
-    end
+
+    w=2./((Q-1)*Q1*P(:,Q1).^2);
+    W = w';
+    qref1d = x';
     
  end
+
+
+function [B1d, D1d] = FEBasisEval(P, Q, nodes, qref1d)
+
+ B1d = zeros(1,P*Q);
+ D1d = zeros(1,P*Q);
+
+for i = 1:Q
+    c1 = 1.0;
+    c3 = nodes(1) - qref1d(i);
+    B1d((i-1)*P+1) = 1.0;
+    for j = 2:P
+        c2 = 1.0;
+        c4 = c3;
+        c3 = nodes(j) - qref1d(i);
+            for k = 1:j-1
+                dx = nodes(j) - nodes(k);
+                c2 = c2*dx;
+                if k == j-1
+                    D1d((i-1)*P + j) = c1*(B1d((i-1)*P + k) - c4*D1d((i-1)*P + k)) / c2;
+                    B1d((i-1)*P + j) = - c1*c4*B1d((i-1)*P + k) / c2;
+                end
+                D1d((i-1)*P + k) = (c3*D1d((i-1)*P + k) - B1d((i-1)*P + k)) / dx;
+                B1d((i-1)*P + k) = c3*B1d((i-1)*P + k) / dx;
+            end
+        c1 = c2;
+    end
+end
+
+end
