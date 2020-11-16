@@ -12,7 +12,8 @@ Sf = B;
 Tf = B;
 ne = 1;
 dof = 3;
-x1 = 1:24;  
+x1 = 1:24;
+x1 = x1';
 y = tensor(ne,dof,P,Q,Rf,Sf,Tf,x1);
 
 % old code
@@ -20,8 +21,6 @@ y = tensor(ne,dof,P,Q,Rf,Sf,Tf,x1);
 
        x = qref1d';
        w = W';
-       num_quadr_pts_in_1d = 2;
-       dim = 3;
        bHat = [(1-x)/2, (1+x)/2];
        dHat = [-1/2+0*x, 1/2+0*x];
            
