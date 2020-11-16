@@ -12,16 +12,8 @@ Sf = B;
 Tf = B;
 ne = 1;
 dof = 3;
-x1 = [1 2 3;
-       4 5 6;
-       7 8 9;
-       10 11 12;
-       13 14 15;
-       16 17 18;
-       19 20 21;
-       22 23 24];  
+x1 = 1:24;  
 y = tensor(ne,dof,P,Q,Rf,Sf,Tf,x1);
-
 
 % old code
        % x: Guass points    w: Gauss weights
@@ -36,13 +28,13 @@ y = tensor(ne,dof,P,Q,Rf,Sf,Tf,x1);
        % Basis/Shape functions (B)
        B_hat = kron(kron(bHat,bHat),bHat); 
            % Derivative of Basis/Shapefunctions (D_hat)
-       D_hat = [kron(kron(bHat,bHat),dHat); kron(kron(bHat,dHat),bHat);kron(kron(dHat,bHat),bHat)];    
+       D_hat = [kron(kron(dHat,bHat),bHat); kron(kron(bHat,dHat),bHat);kron(kron(bHat,bHat),dHat)];    
 
 
-      
- y1 = B_hat*x1;
+       
+ x2 = reshape(x1, 8,3);      
+ y1 = B_hat*x2;
  
- y2 = reshape(y1, 1, 24);
  
  
  
