@@ -1,77 +1,68 @@
-function y = tensor(ne,dof,P,Q,Rf,Sf,Tf,x)
+function [B_hat,D_hat, W_hat] = tensor(B1d,D1d,W,P,Q,dim)
 %TENSOR applies the tensor contraction to input vector x an returns
 %contracted vector y.
-%inputs: ne  :number of elements to operate on
-%        dof :number of components of a field
-%        P   :polynomial degree + 1 
-%        Q   :number of quadrature points
-%        Rf  : B or D in 1-dimention (in form of a horizontal vector)
-%        Sf  : B or D in 1-dimention (in form of a horizontal vector)
-%        Tf  : B or D in 1-dimention (in form of a horizontal vector)
-%        x   : input vector 
-%output: y   : output results
+%inputs: B1d: B in horizontal array form
+%        D1d: D in horizontal array form
+%        W  : W in horizontal array form
+%        P  : polynomial degree + 1 
+%        Q  : number of quadrature points
+%        dim: mesh dimension
+% output: 
+%       : W_hat: Weights for the elements
+%       : B_hat (N in most FEM contexts): 
+%               basis/shape functions evaluted at quadrature points 
+%       : D_hat (partial_N/partial_xi, partial_N/partial_eta, partial_N/partial_zeta) 
+%               derivative of basis/shape functions evaluated at 
+%               quadrature points in xi, eta and (zeta if 3D) directions.
+%         D_hat consists of D0, D1 and (D2 if 3D problem) where
+%           D0 (d_N/d_xi):   derivative of basis/shape functions wrt xi 
+%                            evaluted at quadrature points 
+%           D1 (d_N/d_eta):  derivative of basis/shape functions wrt eta 
+%                            evaluted at quadrature points
+%           D2 (d_N/d_zeta): derivative of basis/shape functions wrt zeta 
+%                            evaluted at quadrature points
+%
+%           Structure of D_hat returned: 
+%                 |D0|            |D0|
+%           D_hat=|D1|   ,  D_hat=|D1|
+%                                 |D2|      
+%           To compute D0, D1 and D2 where (K) represents Kronecker Product :    
+%                  D0 = D (k) B     D0 = D (K) B (K) B   
+%                  D1 = B (K) D     D1 = B (K) D (K) B
+%                                   D2 = B (K) B (K) D
 
-x = reshape(x,[],P*P*P,ne); %reshape input x
-u = zeros(dof,Q*P*P,ne); %holder variable
-v = zeros(dof,Q*Q*P,ne); %holder variable
-y = 0*x; %Output
-    R = zeros(Q,P);
-    S = zeros(Q,P);
-    T = zeros(Q,P);
+    B = zeros(Q,P);
+    D = zeros(Q,P);
     
     
     for i=1:Q
         for j=1:P
-            R(i,j) = Rf((i-1)*P+j);
-            S(i,j) = Sf((i-1)*P+j);
-            T(i,j) = Tf((i-1)*P+j);
+            B(i,j) = B1d((i-1)*P+j);
+            D(i,j) = D1d((i-1)*P+j);
         end
     end
+    
+     %2D
+       if(dim == 2)
+           % Basis/Shape functions (B)
+           B_hat = kron(B,B); 
+           % Derivative of Basis/Shapefunctions (D)
+           D_hat = [kron(D,B);kron(B,D)];           
+           % weights (W_hat)
+           W_hat = kron(W',W');
+       end
 
-for i=1:P
-    for l=1:dof
-        for a=1:Q
-            for jk=1:P*P
-                for e=1:ne
-                    u(l, (a-1)*P*P+jk,e) = u(l, (a-1)*P*P+jk,e) + R(a,i) * x(l,(i-1)*P*P+jk,e);
-                end
-            end
-         end
-     end
-end
- 
+       %3D
+       if(dim == 3)
+           % Basis/Shape functions (B)
+           B_hat = kron(kron(B,B),B); 
+           % Derivative of Basis/Shapefunctions (D_hat)
+           D_hat = [kron(kron(D,B),B); kron(kron(B,D),D);kron(kron(B,D),D)];
+           % weights (W_hat)
+           W_hat = kron(kron(W',W'), W');
+       end    
 
-     % v[l,a,b,k] = S[b,j] u[l,a,j,k]
-        for l=1:dof
-          for a=1:Q
-            for k=1:P
-              for j=1:P
-                for b=1:Q
-                  for e=1:ne
-                      v(l, (((a-1)*Q+b)-1)*P+k,e) = v(l, (((a-1)*Q+b)-1)*P+k,e) + S(b,j) * u(l, (((a-1)*P+j)-1)*P+k,e);
-                  end
-                end
-              end
-            end
-          end
-        end
-        
-        
 
-        % y[l,a,b,c] = T[c,k] v[l,a,b,k]
-        for l=1:dof
-          for ab=1:Q*Q
-            for k=1:P
-              for c=1:Q
-                for e=1:ne
-                    y(l, (ab-1)*Q+c,e) = y(l, (ab-1)*Q+c,e) + T(c,k) * v(l, (ab-1)*P+k,e);
-                end
-              end
-            end
-          end
-        end
-        
-        y = reshape(y,1,[]);
         
 end
 
