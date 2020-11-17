@@ -1,14 +1,27 @@
 function [B, D, W, qref1d] = FEcreateBasis(P,Q, Qmode)
+% This function evaluates the 1D shape function B and its derivative 
+% D of order P at quadrature points Q usingg either GAUSS or LGL
+% input: 
+% P: degree of Lagrange polynomial or shape functions, note degree = P-1
+% Q: Number of quadrature points
+% Qmode: GAUSS or LGL method for computing quadrature points
+% output:
+% B: 1D shape function of size (1 x P*Q) evaluated at quadrature points
+% D: 1D derivative of shape function of size (1 x P*Q) evaluated at quadrature points
+% W: quadrature weight computed by GAUSS or LGL
+% qref1d: quadrature points computed by GAUSS or LGL
 
-
+% get Legendre-Gauss-Lobatto nodes (or quadrature points)
  [nodes, ~ ] = LobattoQuadrature(P); 
  if(strcmp(Qmode, 'GAUSS'))
-     %extend this to higher order than 2 based on C code later
+     % get the quadrature points and weights using GAUSS
      [qref1d, W] = GaussQuadrature(Q);
+     % get the Basis and its derivative as an 1xPQ array
      [B1d, D1d] = FEBasisEval(P, Q, nodes, qref1d);
-
  elseif(strcmp(Qmode, 'LGL'))
-     [qref1d, W] = LobattoQuadrature(Q);     
+     % get the quadrature points and weights using LGL
+     [qref1d, W] = LobattoQuadrature(Q);   
+     % get the Basis and its derivative as an 1xPQ array  
      [B1d, D1d] = FEBasisEval(P, Q, nodes, qref1d);
  else
      error('Qmode error! Choose GAUSS or LGL Quadrature points!');
@@ -86,9 +99,21 @@ function [qref1d, W] = LobattoQuadrature(Q)
 
 
 function [B1d, D1d] = FEBasisEval(P, Q, nodes, qref1d)
+% This function evaluates the 1D shape function B1d and its derivative 
+% D1d of order P at quadrature points Q.
+% input: 
+% P: degree of Lagrange polynomial or shape functions
+% note P = degree + 1 ==> P = 2, returns B1d = [B1d_1 B1d_2]
+% Q: Number of quadrature points,
+% example Q = 2, P = 2 returns B1d = [B1d_1(Q1) B1d_2(Q1) B1d_1(Q2) B1d_2(Q2)]
+% nodes: it is Legendre-Gauss-Lobatto nodes computed by LobattoQuadrature function
+% qref1d: quadrature points computed by GAUSS or LGL
+% output:
+% B1d: 1D shape function of size (1 x P*Q) evaluated at quadrature points
+% D1d: 1D derivative of shape function of size (1 x P*Q) evaluated at quadrature points
 
- B1d = zeros(1,P*Q);
- D1d = zeros(1,P*Q);
+B1d = zeros(1,P*Q);
+D1d = zeros(1,P*Q);
 
 for i = 1:Q
     c1 = 1.0;
