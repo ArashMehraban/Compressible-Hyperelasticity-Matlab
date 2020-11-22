@@ -1,42 +1,42 @@
-function [B, D, W, qref1d] = FEcreateBasis(P,Q, Qmode)
-% This function evaluates the 1D shape function B and its derivative 
-% D of order P at quadrature points Q usingg either GAUSS or LGL
-% input: 
-% P: degree of Lagrange polynomial or shape functions, note degree = P-1
-% Q: Number of quadrature points
-% Qmode: GAUSS or LGL method for computing quadrature points
+function [B1d, D1d, W, qref1d] = FEcreateBasis(P,Q, Qmode)
+% FECREATEBASIS creates and evaluates basis/shape function and their derivative 
+% at quadrature points (Q) for the polynomial order P. 
+%  input: 
+%       P: polynomial degree + 1
+%       Q: Number of quadrature points
+%   Qmode: GAUSS or GLL quadrature points
 % output:
-% B: 1D shape function of size (1 x P*Q) evaluated at quadrature points
-% D: 1D derivative of shape function of size (1 x P*Q) evaluated at quadrature points
-% W: quadrature weight computed by GAUSS or LGL
-% qref1d: quadrature points computed by GAUSS or LGL
+%     B1d: basis/shape function evaluated at quadrature points
+%     D1d: derivative of basis/shape function evaluated at quadrature points
+%       W: quadrature weights
+%  qref1d: quadrature points computed by GAUSS or LGL
 
 % get Legendre-Gauss-Lobatto nodes (or quadrature points)
- [nodes, ~ ] = LobattoQuadrature(P); 
- if(strcmp(Qmode, 'GAUSS'))
-     % get the quadrature points and weights using GAUSS
+  [nodes, ~ ] = LobattoQuadrature(P); 
+  if(strcmp(Qmode, 'GAUSS'))
+     % populate a 1D array with GAUSS quadrature points and weights
      [qref1d, W] = GaussQuadrature(Q);
-     % get the Basis and its derivative as an 1xPQ array
+     % populate a 1D array for B1d and D1d described above in outputs
      [B1d, D1d] = FEBasisEval(P, Q, nodes, qref1d);
- elseif(strcmp(Qmode, 'GLL'))
-     % get the quadrature points and weights using LGL
+  elseif(strcmp(Qmode, 'GLL'))
+     % populate a 1D array with GLL quadrature points and weights
      [qref1d, W] = LobattoQuadrature(Q);   
-     % get the Basis and its derivative as an 1xPQ array  
+     % populate a 1D array for B1d and D1d described above in outputs  
      [B1d, D1d] = FEBasisEval(P, Q, nodes, qref1d);
- else
+  else
      error('Qmode error! Choose GAUSS or GLL Quadrature points!');
- end
- B = B1d;
- D = D1d;
+  end
+
 end
 
 function [qref1d,w] = GaussQuadrature(Q)
-%input  : Q: Number of quadrature points (Gauss)
-%output : qref1d: Gauss quadrature points in 1D
-%         W: Gauss weights
-% Golub-Welsch algorithm: (Brute force version by Trefethen-Bau)
-% to calculate Gauss points and weights using Legendre weight function 
-%
+%GAUSSQUADRATURE computes Gauss quadrature points and weight in 1D
+% input:
+%      Q: Number of GAUSS quadrature points
+% output: 
+%     qref1d: Gauss quadrature points in 1D
+%          W: Gauss weights in 1D
+
     beta = 0.5./sqrt(1-(2*(1:Q-1)).^(-2));
     [V,D]=eig(diag(beta,1)+diag(beta,-1));
     [x,i]=sort(diag(D)); 
@@ -45,6 +45,12 @@ function [qref1d,w] = GaussQuadrature(Q)
 end
 
 function [qref1d, W] = LobattoQuadrature(Q)
+%LOBATTOQUADRATURE computes GLL quadrature points and weight in 1D
+% input:
+%      Q: Number of GLL quadrature points
+% output: 
+%     qref1d: GLL quadrature points in 1D
+%
     % Use the Chebyshev-Gauss-Lobatto nodes as the first guess
     x=-cos(pi*(0:Q-1)/(Q-1))';
     % The Legendre Vandermonde Matrix
@@ -53,7 +59,6 @@ function [qref1d, W] = LobattoQuadrature(Q)
     % Compute its first and second derivatives and
     % update x using the Newton-Raphson method.
     xold=2;
-
     while max(abs(x-xold))>eps
         xold=x;
         Vmat(:,1)=1; 
@@ -63,25 +68,19 @@ function [qref1d, W] = LobattoQuadrature(Q)
         end
         x=xold-( x.*Vmat(:,Q)-Vmat(:,Q-1))./( Q*Vmat(:,Q));
     end
-
     W=(2./((Q-1)*Q*Vmat(:,Q).^2))';
     qref1d = x';    
 end
 
 
 function [B1d, D1d] = FEBasisEval(P, Q, nodes, qref1d)
-% This function evaluates the 1D shape function B1d and its derivative 
-% D1d of order P at quadrature points Q.
-% input: 
-% P: degree of Lagrange polynomial or shape functions
-% note P = degree + 1 ==> P = 2, returns B1d = [B1d_1 B1d_2]
-% Q: Number of quadrature points,
-% example Q = 2, P = 2 returns B1d = [B1d_1(Q1) B1d_2(Q1) B1d_1(Q2) B1d_2(Q2)]
-% nodes: it is Legendre-Gauss-Lobatto nodes computed by LobattoQuadrature function
-% qref1d: quadrature points computed by GAUSS or LGL
+% FEBASISEVAL populates B1d and D1d of order P at quadrature points Q.
+%  input: 
+%        P: degree of Lagrange polynomial or shape functions
+%        Q: Number of quadrature points
 % output:
-% B1d: 1D shape function of size (1 x P*Q) evaluated at quadrature points
-% D1d: 1D derivative of shape function of size (1 x P*Q) evaluated at quadrature points
+%        B1d: see above for description
+%        D1d: see above for description
 
 B1d = zeros(1,P*Q);
 D1d = zeros(1,P*Q);
