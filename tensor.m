@@ -1,9 +1,9 @@
 function [B_hat,D_hat, W_hat] = tensor(B1d,D1d,W,P,Q,dim)
 %TENSOR applies the tensor contraction to input vector x an returns
 %contracted vector y.
-%inputs: B1d: B in horizontal array form
-%        D1d: D in horizontal array form
-%        W  : W in horizontal array form
+%inputs: B1d: basis/shape function evaluated at quadrature points
+%        D1d: derivative of basis/shape function evaluated at quadrature points
+%        W  : quadrature weights
 %        P  : polynomial degree + 1 
 %        Q  : number of quadrature points
 %        dim: mesh dimension
@@ -31,10 +31,10 @@ function [B_hat,D_hat, W_hat] = tensor(B1d,D1d,W,P,Q,dim)
 %                  D1 = B (K) D     D1 = B (K) D (K) B
 %                                   D2 = B (K) B (K) D
 
+    %convert 1D arrays of B1d and D1d to 2D matrices
+    %NOTE: do NOT use reshape. It will break the order when P is NOT eqal Q
     B = zeros(Q,P);
-    D = zeros(Q,P);
-    
-    
+    D = zeros(Q,P);    
     for i=1:Q
         for j=1:P
             B(i,j) = B1d((i-1)*P+j);
