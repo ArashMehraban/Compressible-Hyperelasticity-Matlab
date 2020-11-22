@@ -55,9 +55,6 @@ function [qref1d, W] = LobattoQuadrature(Q)
     x=-cos(pi*(0:Q-1)/(Q-1))';
     % The Legendre Vandermonde Matrix
     Vmat=zeros(Q,Q);
-    % Compute P_(Q) using the recursion relation
-    % Compute its first and second derivatives and
-    % update x using the Newton-Raphson method.
     xold=2;
     while max(abs(x-xold))>eps
         xold=x;
