@@ -93,13 +93,14 @@ function dm = DMcreateFromFile(filename)
        nsp = mesh.ns_prop1;
        ns_fld_names = cell(size(nsp,1),1);
        ns_fld_mesh = cell(size(nsp,1),1);
-       nodeSets=struct();
+       %nodeSets=struct();
        for i=1:size(nsp,1)
            ns_fld_names{i} = strcat('ns_',num2str(nsp(i))); 
            ns_fld_mesh{i} = strcat('node_ns',num2str((i)));
-           nodeSets.(ns_fld_names{i}) = mesh.(ns_fld_mesh{i});
+           dm.(ns_fld_names{i}) = mesh.(ns_fld_mesh{i});
+           %nodeSets.(ns_fld_names{i}) = mesh.(ns_fld_mesh{i});
        end                     
-       dm.nodeSets = nodeSets; 
+       %dm.nodeSets = nodeSets; 
    end
    TF = isKey(M,'num_side_sets');
    if(TF == 1)
