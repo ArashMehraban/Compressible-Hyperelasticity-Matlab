@@ -93,14 +93,14 @@ function dm = DMcreateFromFile(filename)
        nsp = mesh.ns_prop1;
        ns_fld_names = cell(size(nsp,1),1);
        ns_fld_mesh = cell(size(nsp,1),1);
-       %nodeSets=struct(); <--Decide to remove this later!
        for i=1:size(nsp,1)
            ns_fld_names{i} = strcat('ns_',num2str(nsp(i))); 
            ns_fld_mesh{i} = strcat('node_ns',num2str((i)));
            dm.(ns_fld_names{i}) = mesh.(ns_fld_mesh{i});
-           %nodeSets.(ns_fld_names{i}) = mesh.(ns_fld_mesh{i}); <--Decide to remove this later!
+           % create ON and OFF boundary status variable
+           onBdary = strcat(ns_fld_names{i},'_bdry_stat'); 
+           dm.(onBdary) = 'OFF';
        end                     
-       %dm.nodeSets = nodeSets;  <--Decide to remove this later!
    end
    TF = isKey(M,'num_side_sets');
    if(TF == 1)
@@ -116,8 +116,11 @@ function dm = DMcreateFromFile(filename)
            ss_elem_names{i} = strcat('elemss_',num2str(ssp(i)));
            ss_fld_mesh{i} = strcat('side_ss',num2str((i)));
            ss_elem_fld_mesh{i} = strcat('elem_ss',num2str((i)));
-           dm.(ss_fld_names{i}) = mesh.(ss_fld_mesh{i});
            dm.(ss_elem_names{i}) = mesh.(ss_elem_fld_mesh{i});
+           dm.(ss_fld_names{i}) = mesh.(ss_fld_mesh{i}); 
+           % create ON and OFF boundary status variable
+           onBdary = strcat(ss_fld_names{i},'_bdry_stat'); 
+           dm.(onBdary) = 'OFF';          
         end
    end
    dm.u = 0;   
@@ -188,7 +191,3 @@ function mesh = readExodusIImesh(filename)
     %close the file
     netcdf.close(ncid);
 end
-
-% function cntr = cantor(a,b)
-%    cntr = 0.5*(a+b)*((a+b)+1)+b;
-% end
