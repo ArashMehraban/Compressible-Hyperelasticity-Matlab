@@ -9,12 +9,12 @@ function DM = renameBoundary(DM, currentBdryObjName, newBdryObjName)
 %output : DM : for example with its ns_999 boundary object renamed to wall
 %         
   DM_fld_names = fieldnames(DM);
-  if(isKey(DM.bdryNames, currentBdryObjName))
+  if(isKey(DM.internal.bdryNames, currentBdryObjName))
       for i=1:size(DM_fld_names,1)
           if strcmp(DM_fld_names{i}, currentBdryObjName)
-              remove(DM.bdryNames,DM_fld_names{i});
+              remove(DM.internal.bdryNames,DM_fld_names{i});
               DM_fld_names{i} = newBdryObjName;         
-              DM.bdryNames(newBdryObjName) = 1;
+              DM.internal.bdryNames(newBdryObjName) = 1;
           end         
       end      
   else
