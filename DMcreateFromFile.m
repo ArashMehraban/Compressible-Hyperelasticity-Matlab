@@ -3,39 +3,38 @@ function dm = DMcreateFromFile(filename)
 %Exoduss-II mesh file made by Trelis meshing software. This code was
 %tested with output mesh file from Trelis 16.1
 %
-%DMCREATEFROMFILE(filename) can hadle 1D, 2D and 3D meshes with 1 or more blocks of teh same type elements.
+%DMCREATEFROMFILE(filename) can hadle 1D, 2D and 3D meshes with 1 or more blocks of the same type elements.
 %This code was tested with:
 %   -8-noded and 27-noded Hex elements
 %   -4-noded and 9-noded Quad elements
-%Meshes with Tet elements or mixed Tets and Hex elements may not work
+%Meshes with Tet elements or mixed Tets and Hex elements may NOT work
 %properly.
 %Input:  mesh object (mesh object is obtained by calling readExodusIImesh() function automatically)
 %Output: DM object (data manager for FEM)
 %
 %Example input and output:
-%filename = 'cube8_84e_s.exo';
+%filename = 'beam_12e_ns_ss.exo';
 %dm = DMcreateFromFile(filename);
 %
 % dm = 
 % 
 %   struct with fields:
 % 
-%             dim: 3
-%        numNodes: 1000
-%        numElems: 672
-%            conn: [672×8 int32]
-%          coords: [1000×3 double]
-%     numSidesets: 4
-%          ss_996: [192×1 int32]
-%      elemss_996: [192×1 int32]
-%          ss_997: [384×1 int32]
-%      elemss_997: [384×1 int32]
-%          ss_998: [28×1 int32]
-%      elemss_998: [28×1 int32]
-%          ss_999: [28×1 int32]
-%      elemss_999: [28×1 int32]
-%               u: 0
-%          appCtx: 0
+%                 dim: 3
+%            numNodes: 45
+%            numElems: 16
+%     numNodesPerElem: 8
+%                conn: [16×8 int32]
+%              coords: [45×3 double]
+%         numNodesets: 2
+%              ns_998: [1×1 struct]
+%              ns_999: [1×1 struct]
+%         numSidesets: 2
+%              ss_898: [1×1 struct]
+%              ss_899: [1×1 struct]
+%                   u: 0
+%              dofMap: 0
+%              appCtx: 0
 
 %Exodus-ii connect:
 %  v : vertex     bm : bottom face   bk : back face
@@ -86,12 +85,7 @@ function dm = DMcreateFromFile(filename)
    elseif(mesh.num_dim == 3)
        dm.coords = [mesh.coordx,mesh.coordy, mesh.coordz];
    end   
-   
-% % % %    a = 'sss';
-% % % %    Varname=matlab.lang.makeValidName(strcat(a,'_1'));
-% % % %    Varname = struct()
-% % % %    Varname.dof = [1,2,34];
-   
+      
    TF = isKey(M,'num_node_sets');
    if(TF == 1)
        dm.numNodesets = mesh.num_node_sets;
