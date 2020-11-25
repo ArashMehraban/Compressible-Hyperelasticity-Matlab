@@ -1,28 +1,49 @@
-function DM = addBoundary(DM, sets, boundaryMode)
-     
-   if(strcmp(boundaryMode, 'DM_Essential')) %Dirchlet Boundary Condition
-       % The user should be able to provide an array of nodesets or sideset
-       % through sets variable. So here is what needs to be (ignore sidesets)
-       % done:
-       % imagine sets = ['ns_999', 'ns_998']. 
-       % 1) Test if the names in sets variable, i,e. 'ns_999', 'ns_998' in this example
-       %    are valid nodesets in the DM. The any name is not valid, Error
-       %    message
-       % 2) If they are valid, check if their corrsponding bdry_stat are
-       % ON. I.e, test if, in this example, ns_999_bdry_stat and
-       % ns_998_bdry_stat are ON or not. If yes, do nothing and return DM,
-       % if No:
-       % I) turn the bdry_stat for each nodeset ON.
-       % II) call createLM()
-       createLM();
- 
-   elseif(strcmp(Qmode, 'DM_Natural')) % Neumann Boundary Condition
-  
-   else % Deal with Robin Boundary Condition later
-     error('boundaryMode error! Choose DM_Essential or DM_Natural boundary type!');
+function DM = addBoundary(DM, boundaryName, boundaryType)
+   
+   %validate boundarytype input
+   validateBoundaryTye(boundaryType);
+   
+   %validate boundaryName input
+   validBdryNames = validateBoundaryNames(DM, boundaryName);
+   %
+   % WIP: create LM Matrix based on DM.(validBdryNames).boundaryType
+   %         
+   for i=1:size(validBdryNames,2)
+       DM.(validBdryNames{i}).boundaryType = boundaryType;
+   end
+   
+   createLM(DM);
+
+end
+
+function TF = validateBoundaryTye(boundaryType)
+% validateBoundaryMode() throws and error if an unknown boundary Mode is
+% selected
+   if(strcmp(boundaryType, 'DM_Essential') || strcmp(boundaryType, 'DM_Natural'))
+       TF = 1;
+   else
+       error("Error! Choose DM_Essential or DM_Natural as boundaryType" )
    end
 end
+
+function validBdryNames = validateBoundaryNames(DM, boundaryName)
+%validateBoundaryNames() function returns the boundaryNames if they are
+%valid boundary names in DM
+  
+  if(size(boundaryName,2) == 1 && strcmp(boundaryName{1}, 'all'))
+      validBdryNames = keys(DM.bdryNames);
+  else
+      for i=1:size(boundaryName,2)
+          TF = isKey(DM.bdryNames, boundaryName{i});
+          if(TF == 0)
+              error('Error! No such field in DM!');
+          end
+      end
+      validBdryNames = boundaryName;
+   end
+
+end
    
-function createLM()
+function createLM(DM)
  %left empty on Purpose
 end
