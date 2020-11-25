@@ -31,10 +31,10 @@ function validBdryNames = validateBoundaryNames(DM, boundaryName)
 %valid boundary names in DM
   
   if(size(boundaryName,2) == 1 && strcmp(boundaryName{1}, 'all'))
-      validBdryNames = keys(DM.bdryNames);
+      validBdryNames = keys(DM.internal.bdryNames);
   else
       for i=1:size(boundaryName,2)
-          TF = isKey(DM.bdryNames, boundaryName{i});
+          TF = isKey(DM.internal.bdryNames, boundaryName{i});
           if(TF == 0)
               error('Error! No such field in DM!');
           end
