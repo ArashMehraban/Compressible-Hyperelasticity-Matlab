@@ -125,6 +125,8 @@ function dm = DMcreateFromFile(filename)
         end
    end
    dm.bdryNames = boundaryNames;
+   dm.numFields = 0;
+   dm.dofs = 0;
    dm.u = 0;   
    dm.dofMap = 0;
    dm.appCtx = 0;  
