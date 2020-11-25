@@ -85,21 +85,28 @@ function dm = DMcreateFromFile(filename)
        dm.coords = [mesh.coordx,mesh.coordy];
    elseif(mesh.num_dim == 3)
        dm.coords = [mesh.coordx,mesh.coordy, mesh.coordz];
-   end    
+   end   
+   
+% % % %    a = 'sss';
+% % % %    Varname=matlab.lang.makeValidName(strcat(a,'_1'));
+% % % %    Varname = struct()
+% % % %    Varname.dof = [1,2,34];
+   
    TF = isKey(M,'num_node_sets');
    if(TF == 1)
        dm.numNodesets = mesh.num_node_sets;
        %nsnames = mesh.ns_names;  %Matlab screws these up!! In Trelis : {Nodeset|Sideset} <ids> Name "<new_name>"
        nsp = mesh.ns_prop1;
        ns_fld_names = cell(size(nsp,1),1);
-       ns_fld_mesh = cell(size(nsp,1),1);
        for i=1:size(nsp,1)
-           ns_fld_names{i} = strcat('ns_',num2str(nsp(i))); 
-           ns_fld_mesh{i} = strcat('node_ns',num2str((i)));
-           dm.(ns_fld_names{i}) = mesh.(ns_fld_mesh{i});
-           % create ON and OFF boundary status variable
-           onBdary = strcat(ns_fld_names{i},'_bdry_stat'); 
-           dm.(onBdary) = 'OFF';
+           ns_fld_names{i} = strcat('ns_',num2str(nsp(i)));
+           nsTmp =struct();
+           nsTmp.name = ns_fld_names{i};
+           nsTmp.nodes = mesh.(strcat('node_ns',num2str((i))));
+           nsTmp.onBoundary = 'NO';
+           structName = matlab.lang.makeValidName(ns_fld_names{i});
+           cellstructname = cellstr(structName);
+           dm.(cellstructname{1}) = nsTmp;
        end                     
    end
    TF = isKey(M,'num_side_sets');
@@ -109,18 +116,17 @@ function dm = DMcreateFromFile(filename)
        ssp = mesh.ss_prop1;
        ss_fld_names = cell(size(ssp,1),1);
        ss_fld_mesh = cell(size(ssp,1),1);
-       ss_elem_fld_mesh = cell(size(ssp,1),1);
-       ss_elem_names = cell(size(ssp,1),1);
        for i=1:size(ssp,1)
            ss_fld_names{i} = strcat('ss_',num2str(ssp(i))); 
-           ss_elem_names{i} = strcat('elemss_',num2str(ssp(i)));
            ss_fld_mesh{i} = strcat('side_ss',num2str((i)));
-           ss_elem_fld_mesh{i} = strcat('elem_ss',num2str((i)));
-           dm.(ss_elem_names{i}) = mesh.(ss_elem_fld_mesh{i});
-           dm.(ss_fld_names{i}) = mesh.(ss_fld_mesh{i}); 
-           % create ON and OFF boundary status variable
-           onBdary = strcat(ss_fld_names{i},'_bdry_stat'); 
-           dm.(onBdary) = 'OFF';          
+           ssTmp = struct();
+           ssTmp.name = ss_fld_names{i}; 
+           ssTmp.elems = mesh.(strcat('elem_ss',num2str((i))));
+           ssTmp.sides = mesh.(ss_fld_mesh{i});
+           ssTmp.onBoundary = 'NO';
+           structName = matlab.lang.makeValidName(ss_fld_names{i});
+           cellstructname = cellstr(structName);
+           dm.(cellstructname{1}) = ssTmp;         
         end
    end
    dm.u = 0;   
