@@ -84,10 +84,12 @@ function dm = DMcreateFromFile(filename)
        dm.coords = [mesh.coordx,mesh.coordy];
    elseif(mesh.num_dim == 3)
        dm.coords = [mesh.coordx,mesh.coordy, mesh.coordz];
-   end   
-      
-   TF = isKey(M,'num_node_sets');
-   if(TF == 1)
+   end
+   
+   % Keep track of all nodesets and sideset names
+   boundaryNames = containers.Map();
+   
+   if(isKey(M,'num_node_sets'))
        dm.numNodesets = mesh.num_node_sets;
        %nsnames = mesh.ns_names;  %Matlab screws these up!! In Trelis : {Nodeset|Sideset} <ids> Name "<new_name>"
        nsp = mesh.ns_prop1;
@@ -97,13 +99,13 @@ function dm = DMcreateFromFile(filename)
            nsTmp =struct();
            nsTmp.nodes = mesh.(strcat('node_ns',num2str((i))));
            nsTmp.onBoundary = 'NO';
+           boundaryNames(ns_fld_names{i}) = 1;
            structName = matlab.lang.makeValidName(ns_fld_names{i});
            cellstructname = cellstr(structName);
            dm.(cellstructname{1}) = nsTmp;
        end                     
    end
-   TF = isKey(M,'num_side_sets');
-   if(TF == 1)
+   if(isKey(M,'num_side_sets'))
        dm.numSidesets = mesh.num_side_sets;
        %ssnames = mesh.ss_names; %Matlab screws these up!!
        ssp = mesh.ss_prop1;
@@ -116,11 +118,13 @@ function dm = DMcreateFromFile(filename)
            ssTmp.elems = mesh.(strcat('elem_ss',num2str((i))));
            ssTmp.sides = mesh.(ss_fld_mesh{i});
            ssTmp.onBoundary = 'NO';
+           boundaryNames(ss_fld_names{i}) = 1;
            structName = matlab.lang.makeValidName(ss_fld_names{i});
            cellstructname = cellstr(structName);
            dm.(cellstructname{1}) = ssTmp;         
         end
    end
+   dm.bdryNames = boundaryNames;
    dm.u = 0;   
    dm.dofMap = 0;
    dm.appCtx = 0;  
