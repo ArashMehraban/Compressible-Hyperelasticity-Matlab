@@ -124,11 +124,15 @@ function dm = DMcreateFromFile(filename)
            dm.(cellstructname{1}) = ssTmp;         
         end
    end
-   dm.bdryNames = boundaryNames;
+   dmInternal = struct();
+   dmInternal.bdryNames = boundaryNames;
+   dmInternal.LM = 0;
+   dm.internal = dmInternal;
+   %dm.bdryNames = boundaryNames;
    dm.numFields = 0;
    dm.dofs = 0;
    dm.u = 0;   
-   dm.LM = 0;
+   %dm.LM = 0;
    dm.appCtx = 0;  
 end
 
