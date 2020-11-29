@@ -16,6 +16,7 @@ function dm = DMcreateFromFile(filename)
 %filename = 'beam_12e_ns_ss.exo';
 %dm = DMcreateFromFile(filename);
 %
+% 
 % dm = 
 % 
 %   struct with fields:
@@ -32,8 +33,10 @@ function dm = DMcreateFromFile(filename)
 %         numSidesets: 2
 %              ss_898: [1×1 struct]
 %              ss_899: [1×1 struct]
+%            internal: [1×1 struct]
+%           numFields: 0
+%                dofs: 0
 %                   u: 0
-%              dofMap: 0
 %              appCtx: 0
 
 %Exodus-ii connect:
@@ -128,11 +131,7 @@ function dm = DMcreateFromFile(filename)
    dmInternal.bdryNames = boundaryNames;
    dmInternal.LM = 0;
    dm.internal = dmInternal;
-   %dm.bdryNames = boundaryNames;
-   dm.numFields = 0;
-   dm.dofs = 0;
    dm.u = 0;   
-   %dm.LM = 0;
    dm.appCtx = 0;  
 end
 
@@ -198,4 +197,12 @@ function mesh = readExodusIImesh(filename)
     
     %close the file
     netcdf.close(ncid);
+end
+
+function count = digitCount(num)
+     count = 0;
+     while (num ~= 0)
+         num = floor(num/10);
+         count = count+1;      
+     end
 end
