@@ -17,27 +17,26 @@ function dm = DMcreateFromFile(filename)
 %dm = DMcreateFromFile(filename);
 %
 % 
+% 
 % dm = 
 % 
 %   struct with fields:
 % 
-%                 dim: 3
-%            numNodes: 45
-%            numElems: 16
-%     numNodesPerElem: 8
-%                conn: [16×8 int32]
-%              coords: [45×3 double]
-%         numNodesets: 2
-%              ns_998: [1×1 struct]
-%              ns_999: [1×1 struct]
-%         numSidesets: 2
-%              ss_898: [1×1 struct]
-%              ss_899: [1×1 struct]
-%            internal: [1×1 struct]
-%           numFields: 0
-%                dofs: 0
-%                   u: 0
-%              appCtx: 0
+%          numBlocks: 1
+%     materialBlock1: [1×1 struct]
+%                dim: 3
+%       numMeshNodes: 45
+%       numMeshElems: 16
+%             coords: [45×3 double]
+%        numNodesets: 2
+%             ns_998: [1×1 struct]
+%             ns_999: [1×1 struct]
+%        numSidesets: 2
+%             ss_898: [1×1 struct]
+%             ss_899: [1×1 struct]
+%           internal: [1×1 struct]
+%                  u: 0
+%             appCtx: 0
 
 %Exodus-ii connect:
 %  v : vertex     bm : bottom face   bk : back face
@@ -55,31 +54,26 @@ function dm = DMcreateFromFile(filename)
 %
 %
    mesh = readExodusIImesh(filename);
-   numBlocks = mesh.num_el_blk;
+   %numBlocks = mesh.num_el_blk;
    mesh_fld_names = fieldnames(mesh);
    M = containers.Map(mesh_fld_names,zeros(size(mesh_fld_names,1),1));
+   %struct for DM internal usage! user does not need direct access to dmInternal
+   dmInternal = struct();
    
    dm=struct();
-   if(numBlocks > 1)
-       dm.numBlocks = mesh.num_el_blk;
-       for i=1:dm.numBlocks
-           dm.(strcat('numElemsInBlock',num2str((i)))) = mesh.(strcat('num_el_in_blk',num2str((i))));           
-       end
-       for i=1:dm.numBlocks
-           dm.(strcat('conn',num2str((i)))) = mesh.(strcat('connect',num2str((i))))';           
-       end   
-       for i=1:dm.numBlocks
-           dm.(strcat('numNodesPerElem',num2str((i)))) = mesh.(strcat('num_nod_per_el',num2str((i))))';           
-       end  
+   dm.numBlocks = mesh.num_el_blk;
+   for i=1:dm.numBlocks
+       tmpMaterialBlock = struct();       
+       tmpMaterialBlock.numElems = mesh.(strcat('num_el_in_blk',num2str((i))));
+       tmpMaterialBlock.numNodes = mesh.(strcat('num_nod_per_el',num2str((i))));
+       tmpMaterialBlock.conn = mesh.(strcat('connect',num2str((i))))';       
+       tmpMaterialBlock.numFields = 0;
+       tmpMaterialBlock.dofs =0;
+       dm.(strcat('materialBlock',num2str((i)))) = tmpMaterialBlock ;           
    end
    dm.dim = mesh.num_dim;
-   dm.numNodes = mesh.num_nodes;
-   dm.numElems = mesh.num_elem; 
-   dm.numNodesPerElem = mesh.num_nod_per_el1;
-   
-   if(numBlocks == 1)
-       dm.conn = mesh.connect1';
-   end
+   dm.numMeshNodes = mesh.num_nodes;
+   dm.numMeshElems = mesh.num_elem; 
    
    if(mesh.num_dim == 1)
        dm.coords = mesh.coordx;
@@ -96,39 +90,30 @@ function dm = DMcreateFromFile(filename)
        dm.numNodesets = mesh.num_node_sets;
        %nsnames = mesh.ns_names;  %Matlab screws these up!! In Trelis : {Nodeset|Sideset} <ids> Name "<new_name>"
        nsp = mesh.ns_prop1;
-       ns_fld_names = cell(size(nsp,1),1);
        for i=1:size(nsp,1)
-           ns_fld_names{i} = strcat('ns_',num2str(nsp(i)));
            nsTmp =struct();
            nsTmp.nodes = mesh.(strcat('node_ns',num2str((i))));
            nsTmp.boundaryType = 'NONE';
-           boundaryNames(ns_fld_names{i}) = 1;
-           structName = matlab.lang.makeValidName(ns_fld_names{i});
-           cellstructname = cellstr(structName);
-           dm.(cellstructname{1}) = nsTmp;
+           dm.(strcat('ns_',num2str(nsp(i)))) = nsTmp;
+           boundaryNames(strcat('ns_',num2str(nsp(i)))) = 1;
        end                     
    end
    if(isKey(M,'num_side_sets'))
        dm.numSidesets = mesh.num_side_sets;
        %ssnames = mesh.ss_names; %Matlab screws these up!!
        ssp = mesh.ss_prop1;
-       ss_fld_names = cell(size(ssp,1),1);
-       ss_fld_mesh = cell(size(ssp,1),1);
        for i=1:size(ssp,1)
-           ss_fld_names{i} = strcat('ss_',num2str(ssp(i))); 
-           ss_fld_mesh{i} = strcat('side_ss',num2str((i)));
-           ssTmp = struct();
+           ssTmp = struct();           
            ssTmp.elems = mesh.(strcat('elem_ss',num2str((i))));
-           ssTmp.sides = mesh.(ss_fld_mesh{i});
+           ssTmp.sides = mesh.(strcat('side_ss',num2str((i))));
            ssTmp.boundaryType = 'NONE';
-           boundaryNames(ss_fld_names{i}) = 1;
-           structName = matlab.lang.makeValidName(ss_fld_names{i});
-           cellstructname = cellstr(structName);
-           dm.(cellstructname{1}) = ssTmp;         
+           boundaryNames(strcat('ss_',num2str(ssp(i)))) = 1;
+           dm.(strcat('ss_',num2str(ssp(i)))) = ssTmp;        
         end
    end
-   dmInternal = struct();
+   
    dmInternal.bdryNames = boundaryNames;
+   dmInternal.fieldNames = 0;
    dmInternal.LM = 0;
    dm.internal = dmInternal;
    dm.u = 0;   
