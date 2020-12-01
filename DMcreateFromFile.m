@@ -56,11 +56,15 @@ function dm = DMcreateFromFile(filename)
    mesh = readExodusIImesh(filename);
    %numBlocks = mesh.num_el_blk;
    mesh_fld_names = fieldnames(mesh);
+   %Map for field names and corresponding values per field name in mesh object
    M = containers.Map(mesh_fld_names,zeros(size(mesh_fld_names,1),1));
    %struct for DM internal usage! user does not need direct access to dmInternal
    dmInternal = struct();
-   
+   %initialize a dm object
    dm=struct();
+   
+   % Keep track of all materialBlock names
+   materialBlockNames = containers.Map();
    dm.numBlocks = mesh.num_el_blk;
    for i=1:dm.numBlocks
        tmpMaterialBlock = struct();       
@@ -69,7 +73,8 @@ function dm = DMcreateFromFile(filename)
        tmpMaterialBlock.conn = mesh.(strcat('connect',num2str((i))))';       
        tmpMaterialBlock.numFields = 0;
        tmpMaterialBlock.dofs =0;
-       dm.(strcat('materialBlock',num2str((i)))) = tmpMaterialBlock ;           
+       dm.(strcat('materialBlock',num2str((i)))) = tmpMaterialBlock;
+       materialBlockNames(strcat('materialBlock',num2str((i)))) = 1;
    end
    dm.dim = mesh.num_dim;
    dm.numMeshNodes = mesh.num_nodes;
@@ -107,14 +112,16 @@ function dm = DMcreateFromFile(filename)
            ssTmp.elems = mesh.(strcat('elem_ss',num2str((i))));
            ssTmp.sides = mesh.(strcat('side_ss',num2str((i))));
            ssTmp.boundaryType = 'NONE';
+           dm.(strcat('ss_',num2str(ssp(i)))) = ssTmp;
            boundaryNames(strcat('ss_',num2str(ssp(i)))) = 1;
-           dm.(strcat('ss_',num2str(ssp(i)))) = ssTmp;        
+                   
         end
    end
    
    dmInternal.bdryNames = boundaryNames;
-   dmInternal.fieldNames = 0;
+   dmInternal.blockNames = materialBlockNames;
    dmInternal.LM = 0;
+   
    dm.internal = dmInternal;
    dm.u = 0;   
    dm.appCtx = 0;  
