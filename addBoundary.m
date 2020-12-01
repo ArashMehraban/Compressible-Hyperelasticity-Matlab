@@ -17,7 +17,7 @@ function DM = addBoundary(DM, boundaryName, boundaryType)
 end
 
 function TF = validateBoundaryTye(boundaryType)
-% validateBoundaryMode() throws and error if an unknown boundary Mode is
+% validateBoundaryMode() throws and error if an unknown boundary Type is
 % selected
    if(strcmp(boundaryType, 'DM_Essential') || strcmp(boundaryType, 'DM_Natural'))
        TF = 1;
