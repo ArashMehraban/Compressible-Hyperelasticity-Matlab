@@ -1,5 +1,5 @@
 function DM = DMrenameBoundary(DM, currentBdryObjName, newBdryObjName)
-%UPDATEBOUNDARYNAME renames the current boundary struct name with the
+%DMRENAMEBOUNDARY renames the current boundary struct name with the
 %user-defined name for the DM object.
 %
 %inuput : DM data manager object
