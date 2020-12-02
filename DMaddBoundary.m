@@ -36,7 +36,8 @@ function validBdryNames = validateBoundaryNames(DM, boundaryName)
       for i=1:size(boundaryName,2)
           TF = isKey(DM.internal.bdryNames, boundaryName{i});
           if(TF == 0)
-              error('Error! No such field in DM!');
+              msg = strcat('Error!', boundaryName{i}, ' does not exist in DM');
+              error(msg);
           end
       end
       validBdryNames = boundaryName;
