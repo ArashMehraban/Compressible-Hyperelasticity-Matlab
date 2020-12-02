@@ -72,7 +72,6 @@ function dm = DMcreateFromFile(filename)
        tmpMaterialBlock.numNodes = mesh.(strcat('num_nod_per_el',num2str((i))));
        tmpMaterialBlock.conn = mesh.(strcat('connect',num2str((i))))';       
        tmpMaterialBlock.numFields = 0;
-       tmpMaterialBlock.dofs =0;
        dm.(strcat('materialBlock',num2str((i)))) = tmpMaterialBlock;
        materialBlockNames(strcat('materialBlock',num2str((i)))) = 1;
    end
