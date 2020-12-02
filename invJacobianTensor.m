@@ -33,14 +33,14 @@ function [detsInvJe, inverseElemVtxJacobian] = invJacobianTensor(elem_vtx_coords
   end
   
   j=1;
-  for i=1:Q:r
-      temp = permutedJac(i:i+Q-1,:);
+  for i=1:dim:r
+      temp = permutedJac(i:i+dim-1,:);
       [jdet , invTemp] = computeInv(temp);
       if(jdet < 0)
          error('Defective element! Negative determinant in Jacobian');
       end
       dets(j) = jdet;
-      inverseElemVtxJacobian(i:i+Q-1,:) = invTemp;      
+      inverseElemVtxJacobian(i:i+dim-1,:) = invTemp;      
       j=j+1;
   end
   detsInvJe = 1./dets;
