@@ -12,6 +12,15 @@ DM
 DM = DMrenameMaterialBlock(DM, 'materialBlock3', 'Aluminum');
 DM = DMrenameMaterialBlock(DM, 'materialBlock2', 'Iron');
 DM
+DofManager = createDofManager(DM);
+DofManager = dofSetByMaterial(DofManager, [3,1], {'con', 'dis'}, {'','disp'}, 'materialBlock1');
+DofManager = dofSetByMaterial(DofManager, 3, {'dis'}, {'disp'}, 'Aluminum');
+DofManager
+DofManager.Aluminum
+DofManager.Aluminum.disp
+DofManager.materialBlock1
+DofManager.materialBlock1.disp
+
 % DM = DMsetMaterialDof(DM, 'Iron', [3,1],{'disp', 'pressure' });
 % DM.Iron
 DM = DMrenameBoundary(DM, 'ns_10', 'wall');
