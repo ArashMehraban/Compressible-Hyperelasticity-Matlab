@@ -4,13 +4,20 @@ function DofManager = createDofManager(DM)
 %
 %input : DM
 %
-%output: DofManager Object (This mostly an internal object. No user interaction)
+%output: DofManager Object 
+   
+   %keep track of materialBlockNames
+   materialBlockNames = containers.Map();
    
    DofManager = struct();
-   DofManager.numblocks = DM.numBlocks;
+   DofManager.numMaterials = DM.numBlocks;
+   
    blocknames = keys(DM.internal.blockNames);
-   for i=1:DofManager.numblocks
-       DofManager.(char(blocknames{i})) = DM.internal.(blocknames{i}).geom; 
+   
+   for i=1:DofManager.numMaterials
+       DofManager.(blocknames{i}) = DM.internal.(blocknames{i}).geom;
        DofManager.(char(blocknames{i})).numFields = 0;
+       materialBlockNames(blocknames{i}) = 1;
    end
    
+   DofManager.materials = materialBlockNames;
