@@ -24,12 +24,10 @@ function DM = DMrenameMaterialBlock(DM, currentMaterialBlockName, newMaterialNam
   
   %rename the corresponding currentMaterialBlockName for DM.internal too
   DM_internal_fld_names = fieldnames(DM.internal);
-  tmp = DM.internal.(currentMaterialBlockName);
   for i=1:size(DM_internal_fld_names,1)
       if(strcmp(DM_internal_fld_names{i}, currentMaterialBlockName))
           DM_internal_fld_names{i} = newMaterialName;
           DM.internal = cell2struct(struct2cell(DM.internal),DM_internal_fld_names);          
       end      
   end
-  DM.internal.(newMaterialName).geom = tmp;
 end
