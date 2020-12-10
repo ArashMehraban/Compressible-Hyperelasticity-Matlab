@@ -1,36 +1,49 @@
 %Test the current functions in the repo:
 clear
-%clc
+clc
 
 % delete(gcp('nocreate'))
 % parpool
 
 
-%DM functions
+% DM functions with multiple blocks
+fprintf(2,'Create a DM based on multi-block Material:');
 DM = DMcreateFromFile('multi-block.exo');
 DM
+
+% Manipulate Material blocks:
+% rename materialBlock3 to Aluminum
+fprintf(2,'Rename materialBlock3 to Aluminum:\n');
 DM = DMrenameMaterialBlock(DM, 'materialBlock3', 'Aluminum');
+% rename materialBlock2 to Iron
+fprintf(2,'Rename materialBlock2 to Iron:\n');
 DM = DMrenameMaterialBlock(DM, 'materialBlock2', 'Iron');
 DM
+
+% Manipulate Boundary sidesets/nodesets:
+% rename nodeset ns_10 to wall
+fprintf(2, 'rename nodeset ns_10 to wall');
+DM = DMrenameBoundary(DM, 'ns_10', 'wall');
+% set Dirichlet boundary condition for wall and ns_10 nodesets
+DM = DMaddBoundary(DM, {'wall', 'ns_20'}, 'DM_Essential');
+% rename sideset ss_9 to wall
+DM = DMrenameBoundary(DM, 'ss_9', 'ForceFace');
+% set Neumman boundary condition for ForceFace and ss_11 sidesets
+DM = DMaddBoundary(DM, {'ForceFace', 'ss_11'}, 'DM_Natural');
+%
+DM.wall
+DM.ns_20
+DM.ForceFace
+DM.ss_11
+
 DofManager = createDofManager(DM);
-DofManager = dofSetByMaterial(DofManager, [3,1], {'con', 'dis'}, {'','disp'}, 'materialBlock1');
-DofManager = dofSetByMaterial(DofManager, 3, {'dis'}, {'disp'}, 'Aluminum');
+DofManager = setMaterialDofs(DofManager, [3,1], {'con', 'dis'}, {'','disp'}, 'materialBlock1');
+DofManager = setMaterialDofs(DofManager, 3, {'dis'}, {'disp'}, 'Aluminum');
 DofManager
 DofManager.Aluminum
 DofManager.Aluminum.disp
 DofManager.materialBlock1
 DofManager.materialBlock1.disp
-
-% DM = DMsetMaterialDof(DM, 'Iron', [3,1],{'disp', 'pressure' });
-% DM.Iron
-DM = DMrenameBoundary(DM, 'ns_10', 'wall');
-DM = DMaddBoundary(DM, {'wall', 'ns_20'}, 'DM_Essential');
-DM = DMrenameBoundary(DM, 'ss_9', 'ForceFace');
-DM = DMaddBoundary(DM, {'ForceFace', 'ss_11'}, 'DM_Natural');
-DM.wall
-DM.ns_20
-DM.ForceFace
-DM.ss_11
 
 %The elements in the above DM are serentipity. They won't work with Tensor
 % FE basis functions
