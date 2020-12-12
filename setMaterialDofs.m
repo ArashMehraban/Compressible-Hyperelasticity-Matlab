@@ -35,7 +35,8 @@ function DofManager = setMaterialDofs(DofManager, dofs,varargin)
 %                        DM is being addressed. 
 %                        Ex. 'Iron' or 'materialBlock1'                     
 %
-%output: DofManager with dofs, continuousness and fieldNames set for a DM material
+%output: DofManager with dofs, continuousness, fieldNames and degree (default to -1 for error checking)
+%         set for a DM material
 
   if nargin == 2
       if DofManager.numMaterials > 1
@@ -75,7 +76,7 @@ function DofManager = setMaterialDofs_internal(DofManager, dofs, continuousness,
          tmp.dof = dofs(i);
          validContinuousness = IsvalidContinuousness(continuousness{i});
          tmp.dofType= validContinuousness;
-         tmp.degree = -999;
+         tmp.degree = -1;
         if(isempty(fieldNames{i}))
             DofManager.(materialName).(strcat('fld',num2str(i), '_dof')) = tmp;           
             materialfieldNames(strcat('fld',num2str(i), '_dof')) = 1;
