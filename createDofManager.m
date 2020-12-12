@@ -16,7 +16,7 @@ function DofManager = createDofManager(DM)
    
    for i=1:DofManager.numMaterials
        DofManager.(char(blocknames{i})).numFields = 0;
-       materialBlockNames(blocknames{i}) = 1;
+       materialBlockNames(blocknames{i}) = 'None';
    end
    
    DofManager.materials = materialBlockNames;
