@@ -75,6 +75,7 @@ function DofManager = setMaterialDofs_internal(DofManager, dofs, continuousness,
          tmp.dof = dofs(i);
          validContinuousness = IsvalidContinuousness(continuousness{i});
          tmp.dofType= validContinuousness;
+         tmp.degree = -999;
         if(isempty(fieldNames{i}))
             DofManager.(materialName).(strcat('fld',num2str(i), '_dof')) = tmp;           
             materialfieldNames(strcat('fld',num2str(i), '_dof')) = 1;
