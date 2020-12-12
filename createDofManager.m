@@ -15,7 +15,6 @@ function DofManager = createDofManager(DM)
    blocknames = keys(DM.internal.blockNames);
    
    for i=1:DofManager.numMaterials
-       DofManager.(blocknames{i}) = DM.internal.(blocknames{i}).geom;
        DofManager.(char(blocknames{i})).numFields = 0;
        materialBlockNames(blocknames{i}) = 1;
    end
