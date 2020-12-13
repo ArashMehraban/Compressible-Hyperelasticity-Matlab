@@ -10,9 +10,9 @@ function Mat3dresult =  MatMultVec3D(mat, vec)
 
   [rv, cv] = size(vec);
   [~, ~, dmat] = size(mat);
-  if(rv ~= dmat || cv ~= dmat)
+  if(dmat ~= max(rv,cv))
       error('size mismatch!')
   end
 
-   Mat3dresult = bsxfun(@times,mat,reshape(v,1,1,dmat));
+   Mat3dresult = bsxfun(@times,mat,reshape(vec,1,1,dmat));
 end
