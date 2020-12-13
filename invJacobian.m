@@ -16,17 +16,17 @@ function [dets, inverseJacobian] = invJacobian(mat, dim)
      
 
   if dim == 2
-     computeInv = @computeInv2D; 
+     computeInv = @computeInv2x2; 
   end
   if dim == 3
-     computeInv = @computeInv3D; 
+     computeInv = @computeInv3x3; 
   end
   [dets, inverseJacobian] = computeInv(mat);
 
 end
 
 %Compute the Inverse of 2x2 matricies
-function [detJ, inv2D] = computeInv2D(Je)
+function [detJ, inv2x2] = computeInv2x2(Je)
    [~,~,d] = size(Je);
    i =1:d;
    detJ(i) = Je(1,1,i) * Je(2,2,i) - Je(1,2,i) * Je(2,1,i);
@@ -36,16 +36,17 @@ function [detJ, inv2D] = computeInv2D(Je)
        error('Defective element! Negative determinant in element Jacobian');   
    end
    
-   inv2D(:,:,i) = [Je(2,2,i) , -Je(1,2,i); -Je(2,1,i), Je(1,1,i)];
+   inv2x2(:,:,i) = [Je(2,2,i) , -Je(1,2,i); -Je(2,1,i), Je(1,1,i)];
    
    invDetJ = 1./detJ;    
-   for j = 1:d
-       inv2D(:,:,j) = invDetJ(j)*inv2D(:,:,j);
-   end
+   inv2x2 = MatMultVec3D(inv2x2, invDetJ);
+%    for j = 1:d
+%        inv2x2(:,:,j) = invDetJ(j)*inv2x2(:,:,j);
+%    end
 end
 
 %Compute the Inverse of 3x3 matricies
-function [detJ, inv3D] = computeInv3D(Je)
+function [detJ, inv3x3] = computeInv3x3(Je)
    [~,~,d] = size(Je);
    i =1:d;
    detJ(i) =   Je(1,1,i).*(Je(2,2,i).*Je(3,3,i) - Je(2,3,i).*Je(3,2,i)) - Je(1,2,i).*(Je(2,1,i).*Je(3,3,i) - Je(2,3,i).*Je(3,1,i)) + Je(1,3,i).*(Je(2,1,i).*Je(3,2,i) - Je(2,2,i).*Je(3,1,i));
@@ -55,12 +56,13 @@ function [detJ, inv3D] = computeInv3D(Je)
        error('Defective element! Negative determinant in element Jacobian');   
    end
    
-   inv3D(:,:,i) = [Je(2,2,i).*Je(3,3,i) - Je(2,3,i).*Je(3,2,i) , Je(1,3,i).*Je(3,2,i) - Je(1,2,i).*Je(3,3,i), Je(1,2,i).*Je(2,3,i) - Je(1,3,i).*Je(2,2,i); 
+   inv3x3(:,:,i) = [Je(2,2,i).*Je(3,3,i) - Je(2,3,i).*Je(3,2,i) , Je(1,3,i).*Je(3,2,i) - Je(1,2,i).*Je(3,3,i), Je(1,2,i).*Je(2,3,i) - Je(1,3,i).*Je(2,2,i); 
                                Je(2,3,i).*Je(3,1,i) - Je(2,1,i).*Je(3,3,i) , Je(1,1,i).*Je(3,3,i) - Je(1,3,i).*Je(3,1,i), Je(1,3,i).*Je(2,1,i) - Je(1,1,i).*Je(2,3,i);
                                Je(2,1,i).*Je(3,2,i) - Je(2,2,i).*Je(3,1,i) , Je(1,2,i).*Je(3,1,i) - Je(1,1,i).*Je(3,2,i), Je(1,1,i).*Je(2,2,i) - Je(1,2,i).*Je(2,1,i)];
    invDetJ = 1./detJ;
-   for j = 1:d
-       inv3D(:,:,j) = invDetJ(j)*inv3D(:,:,j);
-   end
+   inv3x3 = MatMultVec3D(inv3x3, invDetJ);
+%    for j = 1:d
+%        inv3x3(:,:,j) = invDetJ(j)*inv3x3(:,:,j);
+%    end
 end
   
