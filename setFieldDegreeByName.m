@@ -45,7 +45,7 @@ function DofManager = setFieldDegreeByName(DofManager,degree, varargin)
           
       end
       materialName = char(keys(DofManager.materials));
-      fieldNames = keys(DofManager.(materialName).fieldNames);
+      fieldNames = {keys(DofManager.(materialName).fieldNames)};
       DofManager = setFieldByDegree_internal(DofManager,degree, fieldNames, materialName);
    end
    
