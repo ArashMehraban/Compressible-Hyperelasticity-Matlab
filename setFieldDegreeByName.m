@@ -15,17 +15,17 @@ function DofManager = setFieldDegreeByName(DofManager,degree, varargin)
 %field names is required.
 %Note: If no field names were set already using setMaterialDofs() function,
 %then DofManager has created default field names as follows:
-%fld1_dof, fld2_dof, ... . 
+%fld1, fld2, ... . 
 %Example:
 %    
 %Ex: DofManager = setFieldDegreeByName(DofManager,[2,0], {'disp', 'pressure'});
 %    or
-%    DofManager = setFieldDegreeByName(DofManager,[2,0], {'fld1_dof', 'fld2_dof'});
+%    DofManager = setFieldDegreeByName(DofManager,[2,0], {'fld1', 'fld2'});
 %
 %In all other cases, the the material name also needs to be determined:
 %Ex: DofManager = setFieldDegreeByName(DofManager,[2,0], {'disp', 'pressure'}, 'Rubber');
 %    or
-%    DofManager = setFieldDegreeByName(DofManager,[2,0], {'fld1_dof', 'fld2_dof'}, 'Rubber');
+%    DofManager = setFieldDegreeByName(DofManager,[2,0], {'fld1', 'fld2'}, 'Rubber');
 %
 %input: DofManager
 %     : degree     : a scaler or an array of polynomial degrees

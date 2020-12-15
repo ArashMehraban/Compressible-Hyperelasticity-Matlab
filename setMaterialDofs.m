@@ -22,7 +22,7 @@ function DofManager = setMaterialDofs(DofManager, dofs,varargin)
 %    DofManager = setMaterialDofs(DofManager, 3);
 %    DofManager = setMaterialDofs(DofManager, dofs, {'con'}, {''}, Whatever_DM_materialBlock_name_is);   
 %
-%Note: If field names are ommited, they default to fld1_dof, fld2_dof, ... .           
+%Note: If field names are ommited, they default to fld1, fld2, ... .           
 %
 %input : DofManager
 %      : dofs          : a scalar or an array of dofs. Ex. 3 or [3,1]
@@ -80,8 +80,8 @@ function DofManager = setMaterialDofs_internal(DofManager, dofs, continuousness,
          tmp.dofType= validContinuousness;
          tmp.degree = -1;
         if(isempty(fieldNames{i}))
-            DofManager.(materialName).(strcat('fld',num2str(i), '_dof')) = tmp;           
-            materialfieldNames(strcat('fld',num2str(i), '_dof')) = 1;
+            DofManager.(materialName).(strcat('fld',num2str(i))) = tmp;           
+            materialfieldNames(strcat('fld',num2str(i))) = 1;
         else
             DofManager.(materialName).(char(fieldNames{i})) = tmp;
             materialfieldNames(fieldNames{i}) = 1;
