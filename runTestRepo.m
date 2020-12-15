@@ -162,10 +162,9 @@ DofManager.Iron.fld1_dof
 fprintf(2,'=======================Single Material testing End=============================*\n\n');
 
 
-%The elements in the above DM are serentipity. They won't work with Tensor
+%Multi-block material elements in the above are serentipity. They won't work with Tensor
 % FE basis functions
-DM = DMcreateFromFile('beam_12e_ns_ss.exo');
-DM
+
 P = 2;
 Q = 5;
 [B1d, D1d, W, qref1d] = FEcreateBasis(P,Q, 'GAUSS');
