@@ -94,11 +94,11 @@ DofManager.materialBlock1.displacement
 DofManager.materialBlock1.displacement
 
 fprintf(2, 'Set dofs, countinousness (no fieldnames) for materialBlock4:\n');
-fprintf(2, 'DofManager defaults fieldnames to fld1_dof, fld2_dof, etc .. for materialBlock4:\n');
+fprintf(2, 'DofManager defaults fieldnames to fld1, fld2, etc .. for materialBlock4:\n');
 DofManager = setMaterialDofs(DofManager, [3,1], {'con','dis'}, {'', ''}, 'materialBlock4');
 fprintf(2, 'Displaying dofs, countinousness and fieldnames for Aluminum:\n');
-DofManager.materialBlock4.fld1_dof
-DofManager.materialBlock4.fld1_dof
+DofManager.materialBlock4.fld1
+DofManager.materialBlock4.fld1
 
 
 %Setting polynomial degrees for each Material:
@@ -116,9 +116,9 @@ DofManager = setFieldDegreeByName(DofManager, 3 , {'displacement'},'materialBloc
 DofManager.materialBlock1.displacement
 
 fprintf(2, 'Setting polynomial degrees for materialBlock1:\n');
-DofManager = setFieldDegreeByName(DofManager, [3,2] , {'fld1_dof','fld2_dof'},'materialBlock4');
-DofManager.materialBlock4.fld1_dof
-DofManager.materialBlock4.fld1_dof
+DofManager = setFieldDegreeByName(DofManager, [3,2] , {'fld1','fld2'},'materialBlock4');
+DofManager.materialBlock4.fld1
+DofManager.materialBlock4.fld1
 
 fprintf(2,'=======================Multi-block Materials testing End======================*\n\n');
 
@@ -156,8 +156,7 @@ fprintf(2, 'Set dofs\n');
 DofManager = setMaterialDofs(DofManager, 3);
 disp(DofManager.Iron)
 DofManager = setFieldDegreeByName(DofManager,2);
-disp('00000000000')
-DofManager.Iron.fld1_dof
+DofManager.Iron.fld1
 
 fprintf(2,'=======================Single Material testing End=============================*\n\n');
 
