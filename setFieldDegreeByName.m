@@ -1,25 +1,36 @@
 function DofManager = setFieldDegreeByName(DofManager,degree, varargin)
-%setFieldDegreeByName allows the user to set the level polynomial accuracy
-%per field per material.
+%setFieldDegreeByName sets the polynomial accuracy per field per material.
+%function signature:
+%  DofManager = setFieldDegreeByName(DofManager,degree,fieldNames, material);
+%
+%Note: A function call per material is required
 %
 %If DM has ONE material and the material has ONE field, then short version
 %of the function may be called as follows:
 %    DofManager = setFieldDegreeByName(DofManager,degree);
 %Ex: DofManager = setFieldDegreeByName(DofManager,2); 
 %
-%If DM has ONE material with the material has MULTIPLE fields, then a
-%material name is not needed, but a cell array of field names is required:
-%    DofManager = setFieldDegreeByName(DofManager,degree,fieldNames);
+%If DM has ONE material and the material has MULTIPLE fields, then a
+%material name is not needed as a function input, but a cell array of 
+%field names is required.
+%Note: If no field names were set already using setMaterialDofs() function,
+%then DofManager has created default field names as follows:
+%fld1_dof, fld2_dof, ... . 
+%Example:
+%    
 %Ex: DofManager = setFieldDegreeByName(DofManager,[2,0], {'disp', 'pressure'});
+%    or
+%    DofManager = setFieldDegreeByName(DofManager,[2,0], {'fld1_dof', 'fld2_dof'});
 %
-% In all other cases, the the material also needs to be determined:
-%    DofManager = setFieldDegreeByName(DofManager,degree,fieldNames, materialName);
+%In all other cases, the the material name also needs to be determined:
 %Ex: DofManager = setFieldDegreeByName(DofManager,[2,0], {'disp', 'pressure'}, 'Rubber');
+%    or
+%    DofManager = setFieldDegreeByName(DofManager,[2,0], {'fld1_dof', 'fld2_dof'}, 'Rubber');
 %
 %input: DofManager
 %     : degree     : a scaler or an array of polynomial degrees
 %     : fieldNames : a cell array of field names
-%     : materialName
+%     : materialName ONE fieldName
 %
 %Output: DofManager
 %      
