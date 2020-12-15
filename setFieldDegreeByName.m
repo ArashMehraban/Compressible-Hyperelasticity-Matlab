@@ -96,7 +96,7 @@ end
 
 function validateFieldName(DofManager,fieldNames, materialName)
 %Validate Field name in the specified materialBlock
-    for i=1:2
+    for i=1:size(fieldNames{1},2)
         if isKey(DofManager.(char(materialName)).fieldNames,char(fieldNames{1}(i)))
         else
             msg = strcat("Error! ",  materialName, " does NOT have '", char(fieldNames{1}(i)), "' field"); 
