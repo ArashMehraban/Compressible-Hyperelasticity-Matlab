@@ -13,9 +13,10 @@ function DofManager = setMaterialDofs(DofManager, dofs,varargin)
 %    DofManager = setMaterialDofs(DofManager, [3,1], {'con', 'con'}, {'disp', 'pressure'}, 'Iron');
 %    for an incompressible problem with continuous pressure field
 %
-% Note:  'con', 'continuous' and 'default' can be used instead of 'continuous'
+% Note:  'con', 'continuous' or 'default' can be used instead of 'continuous'
 %        'dis' or 'discontinuous' can be used instead of 'discontinuous'.
-%        
+%
+%Note: For ease of programming use, it is recommended that the user specify field names for dofs. 
 %In case of one material (or masterialBlock) the short version of the
 %function may be used:
 %    DofManager = setMaterialDofs(DofManager, 3);
@@ -51,7 +52,8 @@ function DofManager = setMaterialDofs(DofManager, dofs,varargin)
           fprintf(2,'setMaterialDofs(DofManager, [3,1], {''con'', ''dis''}, {''disp'', ''pressure''}, ''Iron'');\n')
           error('Error! Wrong usage of setMaterialDofs()!')
       end
-      DofManager = setMaterialDofs_internal(DofManager, dofs, {'con'}, {''}, char(keys(DofManager.materials)));
+      materialName = char(keys(DofManager.materials));
+      DofManager = setMaterialDofs_internal(DofManager, dofs, {'con'}, {''}, materialName);
   end
   if nargin > 2
       continuousness = varargin{1};
