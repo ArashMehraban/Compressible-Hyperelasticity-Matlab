@@ -6,44 +6,161 @@ clc
 % parpool
 
 
-% DM functions with multiple blocks
+% sz = 100000;
+% a = [1 2 3; 4 5 60; 7 88 9];
+% mat = reshape(repmat(a, 1,sz), 3,3,[]);
+% 
+% tic 
+% mat1 = delfun(mat);
+% toc
+% tic 
+% mat2 = delfun1(mat);
+% toc
+% 
+% DM = DMcreateFromFile('cylinder8_477Ke_2ss_us.exo');
+% a = unique(DM.internal.materialBlock1.geom.conn);
+
+fprintf(2,'*=======================Multi-block Materials testing Start======================\n\n');
+
 fprintf(2,'Create a DM based on multi-block Material:');
 DM = DMcreateFromFile('multi-block.exo');
-DM
+disp(DM)
+
 
 % Manipulate Material blocks:
-% rename materialBlock3 to Aluminum
 fprintf(2,'Rename materialBlock3 to Aluminum:\n');
 DM = DMrenameMaterialBlock(DM, 'materialBlock3', 'Aluminum');
 % rename materialBlock2 to Iron
-fprintf(2,'Rename materialBlock2 to Iron:\n');
-DM = DMrenameMaterialBlock(DM, 'materialBlock2', 'Iron');
-DM
+fprintf(2,'Rename materialBlock2 to Rubber:\n\n');
+DM = DMrenameMaterialBlock(DM, 'materialBlock2', 'Rubber');
+disp(DM)
 
-% Manipulate Boundary sidesets/nodesets:
-% rename nodeset ns_10 to wall
-fprintf(2, 'rename nodeset ns_10 to wall');
+% Manipulate Boundary (sidesets/nodesets):
+fprintf(2, 'Rename nodeset ns_10 to wall\n');
 DM = DMrenameBoundary(DM, 'ns_10', 'wall');
-% set Dirichlet boundary condition for wall and ns_10 nodesets
+disp(DM)
+
+fprintf(2, 'Set Dirichlet boundary condition for wall and ns_20 nodesets\n');
 DM = DMaddBoundary(DM, {'wall', 'ns_20'}, 'DM_Essential');
-% rename sideset ss_9 to wall
+disp(DM)
+
+fprintf(2, 'Rename nodeset ss_9 to ForceFace\n');
 DM = DMrenameBoundary(DM, 'ss_9', 'ForceFace');
-% set Neumman boundary condition for ForceFace and ss_11 sidesets
-DM = DMaddBoundary(DM, {'ForceFace', 'ss_11'}, 'DM_Natural');
-%
-DM.wall
-DM.ns_20
-DM.ForceFace
-DM.ss_11
+disp(DM)
+
+fprintf(2, 'Set Neumann boundary condition for ss_1, ss_2, ss_3\n');
+DM = DMaddBoundary(DM, {'ss_1', 'ss_2', 'ss_3'}, 'DM_Natural');
+disp(DM.ss_1)
+disp(DM.ss_2)
+disp(DM.ss_3)
+
+
+
+%Setting material property requires the user to create a struct and pass it to the
+%DMsetMaterialProperty() function. Struct is needed because, it cannot be
+%determined what physics a problem has. For example for elastic type
+%problems, user must create:
+fprintf(2, 'Seting Physics for a Aluminum\n');
+physAl = struct();
+physAl.nu = 0.3;
+physAl.E = 1e6;
+DM = DMsetMaterialProperty(DM, physAl, 'Aluminum');
+physRub = struct();
+physRub.nu = 0.3;
+physRub.E = 1e6;
+DM = DMsetMaterialProperty(DM, physRub, 'Rubber');
+disp(DM.Aluminum)
+disp(DM.Rubber)
+
+
+
+fprintf(2, 'Create a DofManager:\n');
+DofManager = createDofManager(DM);
+disp(DofManager)
+fprintf(2, 'Set dofs, countinousness fieldnames for Rubber, Aluminum and materialBlock1:\n');
+DofManager = setMaterialDofs(DofManager, [3,1], {'con', 'dis'}, {'displacement','pressure'}, 'Rubber');
+DofManager = setMaterialDofs(DofManager, 3, {'con'}, {'displacement'}, 'Aluminum');
+DofManager = setMaterialDofs(DofManager, 3, {'con'}, {'displacement'}, 'materialBlock1');
+
+fprintf(2, 'Displaying dofs, countinousness and fieldnames for Rubber:\n');
+DofManager.Rubber
+DofManager.Rubber.displacement
+DofManager.Rubber.pressure
+fprintf(2, 'Displaying dofs, countinousness and fieldnames for Aluminum:\n');
+DofManager.Aluminum
+DofManager.Aluminum.displacement
+fprintf(2, 'Displaying dofs, countinousness and fieldnames for Aluminum:\n');
+DofManager.materialBlock1.displacement
+DofManager.materialBlock1.displacement
+
+fprintf(2, 'Set dofs, countinousness (no fieldnames) for materialBlock4:\n');
+fprintf(2, 'DofManager defaults fieldnames to fld1_dof, fld2_dof, etc .. for materialBlock4:\n');
+DofManager = setMaterialDofs(DofManager, [3,1], {'con','dis'}, {'', ''}, 'materialBlock4');
+fprintf(2, 'Displaying dofs, countinousness and fieldnames for Aluminum:\n');
+DofManager.materialBlock4.fld1_dof
+DofManager.materialBlock4.fld1_dof
+
+
+%Setting polynomial degrees for each Material:
+fprintf(2, 'Setting polynomial degrees for Rubber:\n');
+DofManager = setFieldDegreeByName(DofManager,[2,0], {'displacement','pressure'},'Rubber');
+DofManager.Rubber.displacement
+DofManager.Rubber.pressure
+
+fprintf(2, 'Setting polynomial degrees for Aluminum:\n');
+DofManager = setFieldDegreeByName(DofManager, 4 , {'displacement'},'Aluminum');
+DofManager.Aluminum.displacement
+
+fprintf(2, 'Setting polynomial degrees for materialBlock1:\n');
+DofManager = setFieldDegreeByName(DofManager, 3 , {'displacement'},'materialBlock1');
+DofManager.materialBlock1.displacement
+
+fprintf(2, 'Setting polynomial degrees for materialBlock1:\n');
+DofManager = setFieldDegreeByName(DofManager, [3,2] , {'fld1_dof','fld2_dof'},'materialBlock4');
+DofManager.materialBlock4.fld1_dof
+DofManager.materialBlock4.fld1_dof
+
+fprintf(2,'=======================Multi-block Materials testing End======================*\n\n');
+
+clear
+
+fprintf(2,'*=======================Single Material testing Start===========================\n\n');
+
+DM = DMcreateFromFile('beam_12e_ns_ss.exo');
+disp(DM)
+fprintf(2,'Rename materialBlock1 to Iron:\n');
+DM = DMrenameMaterialBlock(DM, 'materialBlock1', 'Iron');
+disp(DM)
+
+% Manipulate Boundary (sidesets/nodesets):
+fprintf(2, 'Rename nodeset ns_998 to wall\n');
+DM = DMrenameBoundary(DM, 'ns_998', 'wall');
+disp(DM)
+
+fprintf(2, 'Set Dirichlet boundary condition for wall\n');
+DM = DMaddBoundary(DM, {'wall'}, 'DM_Essential');
+disp(DM.wall)
+
+fprintf(2, 'Rename nodeset ns_999 to Force\n');
+DM = DMrenameBoundary(DM, 'ns_999', 'Force');
+disp(DM)
+
+fprintf(2, 'Set Neumman boundary condition for wall and ss_898 nodesets\n');
+DM = DMaddBoundary(DM, {'ss_898'}, 'DM_Natural');
+disp(DM.ss_898)
+
 
 DofManager = createDofManager(DM);
-DofManager = setMaterialDofs(DofManager, [3,1], {'con', 'dis'}, {'','disp'}, 'materialBlock1');
-DofManager = setMaterialDofs(DofManager, 3, {'dis'}, {'disp'}, 'Aluminum');
-DofManager
-DofManager.Aluminum
-DofManager.Aluminum.disp
-DofManager.materialBlock1
-DofManager.materialBlock1.disp
+disp(DofManager)
+fprintf(2, 'Set dofs\n');
+DofManager = setMaterialDofs(DofManager, 3);
+disp(DofManager.Iron)
+DofManager = setFieldDegreeByName(DofManager,2);
+disp('00000000000')
+DofManager.Iron.fld1_dof
+
+fprintf(2,'=======================Single Material testing End=============================*\n\n');
+
 
 %The elements in the above DM are serentipity. They won't work with Tensor
 % FE basis functions
