@@ -1,16 +1,16 @@
 function DofManager = setMaterialDofs(DofManager, dofs,varargin)
-%setMaterialDofs allows the user to set dofs, continuousness of each field
-%and user-defined field names per material for the DofManager.
+%setMaterialDofs sets dofs, continuousness and field names for each field
+%per material for the DofManager.
 %
 %NOTE: This function MUST be called for each material (materialBlock) separately.
 %
 %Function signature:
 %    DofManager = setMaterialDofs(DofManager, dofs, continuousness, fieldNames, materialName);
 %Example:
-%    DofManager = setMaterialDofs(DofManager, [3,1], {'con', 'dis'}, {'disp', 'pressure'}, 'Iron');
+%    DofManager = setMaterialDofs(DofManager, [3,1], {'con', 'dis'}, {'disp', 'pressure'}, 'Rubber');
 %    for an incompressible problem with discontinuous pressure field
 %  or
-%    DofManager = setMaterialDofs(DofManager, [3,1], {'con', 'con'}, {'disp', 'pressure'}, 'Iron');
+%    DofManager = setMaterialDofs(DofManager, [3,1], {'con', 'con'}, {'disp', 'pressure'}, 'Rubber');
 %    for an incompressible problem with continuous pressure field
 %
 % Note:  'con', 'continuous' or 'default' can be used instead of 'continuous'
