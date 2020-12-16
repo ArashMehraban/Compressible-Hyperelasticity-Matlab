@@ -22,7 +22,7 @@ clc
 
 fprintf(2,'*=======================Multi-block Materials testing Start======================\n\n');
 
-fprintf(2,'Create a DM based on multi-block Material:');
+fprintf(2,'Create a DM based on multi-block Material:\n');
 DM = DMcreateFromFile('multi-block.exo');
 disp(DM)
 
@@ -78,9 +78,9 @@ fprintf(2, 'Create a DofManager:\n');
 DofManager = createDofManager(DM);
 disp(DofManager)
 fprintf(2, 'Set dofs, countinousness fieldnames for Rubber, Aluminum and materialBlock1:\n');
-DofManager = setMaterialDofs(DofManager, [3,1], {'con', 'dis'}, {'displacement','pressure'}, 'Rubber');
-DofManager = setMaterialDofs(DofManager, 3, {'con'}, {'displacement'}, 'Aluminum');
-DofManager = setMaterialDofs(DofManager, 3, {'con'}, {'displacement'}, 'materialBlock1');
+DofManager = setMaterialDofs(DofManager, [3,1], {'con', 'dis'}, {'displacement','pressure'},{'setBoundary', 'offBoundary'}, 'Rubber');
+DofManager = setMaterialDofs(DofManager, 3, {'con'}, {'displacement'}, {'setBoundary'}, 'Aluminum');
+DofManager = setMaterialDofs(DofManager, 3, {'con'}, {'displacement'}, {'setBoundary'}, 'materialBlock1');
 
 fprintf(2, 'Displaying dofs, countinousness and fieldnames for Rubber:\n');
 DofManager.Rubber
@@ -95,7 +95,7 @@ DofManager.materialBlock1.displacement
 
 fprintf(2, 'Set dofs, countinousness (no fieldnames) for materialBlock4:\n');
 fprintf(2, 'DofManager defaults fieldnames to fld1, fld2, etc .. for materialBlock4:\n');
-DofManager = setMaterialDofs(DofManager, [3,1], {'con','dis'}, {'', ''}, 'materialBlock4');
+DofManager = setMaterialDofs(DofManager, [3,1], {'con','dis'}, {'', ''}, {'setBoundary', 'offBoundary'}, 'materialBlock4');
 fprintf(2, 'Displaying dofs, countinousness and fieldnames for Aluminum:\n');
 DofManager.materialBlock4.fld1
 DofManager.materialBlock4.fld1
