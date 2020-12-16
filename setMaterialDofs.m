@@ -1,22 +1,26 @@
 function DofManager = setMaterialDofs(DofManager, dofs,varargin)
-%setMaterialDofs sets dofs, continuousness and field names for each field
-%per material for the DofManager.
+%setMaterialDofs sets number of dofs, continuousness, field name and if field can have Essential boundary for 
+%each field per material in the DofManager.
 %
 %NOTE: This function MUST be called for each material (materialBlock) separately.
 %
+%Note: In FEM analysis of Porous media, Essential Boundary condition may be
+%set for displacement and pressure. That is why setMaterialDofs() permits
+%the user to determine if a particular field accepts Essential Boundary condition. 
+%
 %Function signature:
-%    DofManager = setMaterialDofs(DofManager, dofs, continuousness, fieldNames, materialName);
+%    DofManager = setMaterialDofs(DofManager, dofs, continuousness, fieldNames, fieldAcceptsBoundary, materialName);
 %Example:
-%    DofManager = setMaterialDofs(DofManager, [3,1], {'con', 'dis'}, {'disp', 'pressure'}, 'Rubber');
+%    DofManager = setMaterialDofs(DofManager, [3,1], {'con', 'dis'}, {'disp', 'pressure'}, {'setBoundary', 'offBoundary'}, 'Rubber');
 %    for an incompressible problem with discontinuous pressure field
 %  or
-%    DofManager = setMaterialDofs(DofManager, [3,1], {'con', 'con'}, {'disp', 'pressure'}, 'Rubber');
+%    DofManager = setMaterialDofs(DofManager, [3,1], {'con', 'con'}, {'disp', 'pressure'}, {'setBoundary', 'offBoundary'}, 'Rubber');
 %    for an incompressible problem with continuous pressure field
 %
-% Note:  'con', 'continuous' or 'default' can be used instead of 'continuous'
+%Note:  'con', 'continuous' or 'default' may be used instead of 'continuous'
 %        'dis' or 'discontinuous' can be used instead of 'discontinuous'.
 %
-%Note: For ease of programming use, it is recommended that the user specify field names for dofs. 
+%Note: It is recommended that the user specify field names for dofs. 
 %In case of one material (or masterialBlock) the short version of the
 %function may be used:
 %    DofManager = setMaterialDofs(DofManager, 3);
@@ -25,48 +29,54 @@ function DofManager = setMaterialDofs(DofManager, dofs,varargin)
 %Note: If field names are ommited, they default to fld1, fld2, ... .           
 %
 %input : DofManager
-%      : dofs          : a scalar or an array of dofs. Ex. 3 or [3,1]
-%      : continuousness: a cell array the same size as dofs array that
-%                        indicates the continuousness of each dof. 
-%                        Ex. {'con', 'dis'} (see above help)
-%      : fieldNames    : a cell array the same size as dofs array that 
-%                        indicates a name for each field. 
-%                        Ex: {'disp', ''pressure'}  
-%      : materialName  : one string name that indicates which material in
-%                        DM is being addressed. 
-%                        Ex. 'Iron' or 'materialBlock1'                     
+%      : dofs                : a scalar or an array of dofs. Ex. 3 or [3,1]
+%      : continuousness      : a cell array the same size as dofs array that
+%                              indicates the continuousness of each dof. 
+%                              Ex. {'con', 'dis'} (see above help)
+%      : fieldNames          : a cell array the same size as dofs array that 
+%                              indicates a name for each field. 
+%                              Ex: {'disp', ''pressure'} 
+%      : fieldAcceptsBoundary: a cell array the same size as dofs array
+%                              that indicates if a field can accept
+%                              Essential boundary condition or not.
+%                              Ex: {'setBoundary', 'offBoundary'}
+%      : materialName        : one string name that indicates which material in
+%                              DM is being addressed. 
+%                              Ex. 'Iron' or 'materialBlock1'                     
 %
-%output: DofManager with dofs, continuousness, fieldNames and degree (default to -1 for error checking)
-%         set for a DM material
+%output: DofManager with dofs, continuousness, fieldAcceptsBoundary, fieldNames
+%        and degree (default to -1 for error checking) set for a DM material
+%
 
   if nargin == 2
       if DofManager.numMaterials > 1
           fprintf(2,'DofManager has multiple materials. Use:\n')
-          fprintf(2,'setMaterialDofs(DofManager, dofs, continuousness, fieldNames, materialName);\n')
-          fprintf(2,'setMaterialDofs(DofManager, [3,1], {''con'', ''dis''}, {''disp'', ''pressure''}, ''Iron'');\n')
+          fprintf(2,'setMaterialDofs(DofManager, dofs, continuousness, fieldNames, fieldAcceptsBoundary, materialName);\n')
+          fprintf(2,'setMaterialDofs(DofManager, [3,1], {''con'', ''dis''}, {''disp'', ''pressure''}, {''setBoundary'', ''offBoundary''}, ''Rubber'');\n')
           error('Error! Wrong usage of setMaterialDofs()!')
       end
       if(size(dofs,2) > 1)
           fprintf(2,'For multiple Fields, use:\n')
-          fprintf(2,'setMaterialDofs(DofManager, dofs, continuousness, fieldNames, materialName);\n')
-          fprintf(2,'setMaterialDofs(DofManager, [3,1], {''con'', ''dis''}, {''disp'', ''pressure''}, ''Iron'');\n')
+          fprintf(2,'setMaterialDofs(DofManager, dofs, continuousness, fieldNames, fieldAcceptsBoundary, materialName);\n')
+          fprintf(2,'setMaterialDofs(DofManager, [3,1], {''con'', ''dis''}, {''disp'', ''pressure''}, {''setBoundary'', ''offBoundary''}, ''Iron'');\n')
           error('Error! Wrong usage of setMaterialDofs()!')
       end
       materialName = char(keys(DofManager.materials));
-      DofManager = setMaterialDofs_internal(DofManager, dofs, {'con'}, {''}, materialName);
+      DofManager = setMaterialDofs_internal(DofManager, dofs, {'con'}, {''}, {'setBoundary'}, materialName);
   end
   if nargin > 2
       continuousness = varargin{1};
       fieldNames = varargin{2};
-      materialName = varargin{3};
-      DofManager = setMaterialDofs_internal(DofManager, dofs, continuousness, fieldNames, materialName);
+      fieldAcceptsBoundary = varargin{3};
+      materialName = varargin{4};
+      DofManager = setMaterialDofs_internal(DofManager, dofs, continuousness, fieldNames, fieldAcceptsBoundary, materialName);
   end
-  if nargin >5
+  if nargin >6
       error('too many inputs!')
   end
 end
 
-function DofManager = setMaterialDofs_internal(DofManager, dofs, continuousness, fieldNames, materialName)
+function DofManager = setMaterialDofs_internal(DofManager, dofs, continuousness, fieldNames, fieldAcceptsBoundary, materialName)
     DofManager.(materialName).numFields = size(dofs,2);
     
     validateBlockName(DofManager, materialName);
@@ -78,6 +88,8 @@ function DofManager = setMaterialDofs_internal(DofManager, dofs, continuousness,
          tmp.dof = dofs(i);
          validContinuousness = IsvalidContinuousness(continuousness{i});
          tmp.dofType= validContinuousness;
+         validSetBoundary = IsValidAnswerToSetBoundary(fieldAcceptsBoundary{i});
+         tmp.setBoundary = validSetBoundary;
          tmp.degree = -1;
         if(isempty(fieldNames{i}))
             DofManager.(materialName).(strcat('fld',num2str(i))) = tmp;           
@@ -102,13 +114,26 @@ function validateBlockName(DofManager, materialName)
 end
 
 function validContinuousness = IsvalidContinuousness(continuousness)
-%Error if user does not employ a correct Continuousness word.
-    valids = {'con', 'continuous','default', 'dis','discontinuous'};
-    if(sum(strcmp(continuousness, valids)))
+%Error if user does not employ a correct Continuousness word.    
+    if(strcmp(continuousness,'continuous') || strcmp(continuousness,'con') || strcmp(continuousness,'default'))
         validContinuousness = 'continuous';
+    elseif(strcmp(continuousness,'discontinuous') || strcmp(continuousness,'dis'))
+        validContinuousness = 'discontinuous';        
     else
         fprintf(2,'Valid inputs for continuous: ''con'', ''continuous'',''default''\n')
         fprintf(2,'Valid inputs for discontinuous: ''dis'', ''discontinuous''\n')
         error('continuousness parameter Error.')
+    end
+end
+
+function validSetBoundary = IsValidAnswerToSetBoundary(fieldAcceptsBoundary)
+    if(strcmp(fieldAcceptsBoundary,'setBoundary'))
+        validSetBoundary = 'yes';
+    elseif(strcmp(fieldAcceptsBoundary,'offBoundary'))
+        validSetBoundary = 'no';       
+    else
+        fprintf(2,'Valid input to set Essential boundary for a field is: ''setBoundary''\n')
+        fprintf(2,'Valid input to ignore setting Essential boundary for a field is: ''offBoundary''\n')
+        error('setBoundary parameter Error.')  
     end
 end
