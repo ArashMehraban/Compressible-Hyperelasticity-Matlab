@@ -57,7 +57,7 @@ function [B_hat,D_hat, W_hat] = createTensor(B1d,D1d,W,P,Q,dim)
            % Basis/Shape functions (B)
            B_hat = kron(kron(B,B),B); 
            % Derivative of Basis/Shapefunctions (D_hat)
-           D_hat = [kron(kron(D,B),B); kron(kron(B,D),D);kron(kron(B,D),D)];
+           D_hat = [kron(kron(D,B),B); kron(kron(B,D),B);kron(kron(B,B),D)];
            % weights (W_hat)
            W_hat = kron(kron(W',W'), W');
        end    
