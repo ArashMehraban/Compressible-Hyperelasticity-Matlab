@@ -190,6 +190,16 @@ function mesh = readExodusIImesh(filename)
     netcdf.close(ncid);
 end
 
+function c = combine(a,b)
+    if a < b
+        c = a * 10^(digitCount(b)) + b;
+    else
+        c = b * 10^(digitCount(a)) + a;
+    end
+
+
+end
+
 function count = digitCount(num)
      count = 0;
      while (num ~= 0)
