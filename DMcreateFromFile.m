@@ -196,8 +196,6 @@ function c = combine(a,b)
     else
         c = b * 10^(digitCount(a)) + a;
     end
-
-
 end
 
 function count = digitCount(num)
